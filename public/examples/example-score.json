@@ -1,0 +1,27 @@
+{
+  "v": 3,
+  "seed": 42,
+  "packs": { "core": "3.0.0", "example": "1.0.0" },
+  "scenes": [{
+    "id": "convergence", "name": "Independent routes, one destination",
+    "duration": 6000, "layout": "line",
+    "style": { "face": "mincho", "color": "#eeeae1" },
+    "content": [{ "id": "word-mess", "type": "word", "begin": 1000, "end": 5000,
+      "children": [
+        { "id": "letter-m", "text": "m" },
+        { "id": "letter-e", "text": "e", "style": { "size": 1.5 } },
+        { "id": "letter-s1", "text": "s" },
+        { "id": "letter-s2", "text": "s" }
+      ]
+    }],
+    "animations": [
+      { "id": "arrive", "use": "example/converge", "each": "character",
+        "duration": 1800, "stagger": 100, "params": { "distance": 160, "turns": 0.7 } },
+      { "id": "leave", "use": "core/fade", "phase": "exit", "duration": 700 }
+    ],
+    "materials": [
+      { "id": "rough-e", "use": "example/grain", "select": { "ids": ["letter-e"] },
+        "params": { "density": 120 } }
+    ]
+  }]
+}

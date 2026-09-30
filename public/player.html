@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lilt · OBS player</title><link rel="stylesheet" href="/lilt/fonts.css"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}canvas{width:100%;height:100%;display:block}#error{position:absolute;inset:auto 24px 24px;color:#fff;background:#601b32;padding:16px;font:14px system-ui;white-space:pre-wrap}#error:empty{display:none}</style></head><body><canvas id="stage" aria-label="Animated lyrics"></canvas><div id="error" role="alert"></div><script type="module">
+import Lilt from '/lilt/index.js';
+const query=new URLSearchParams(location.search),error=document.getElementById('error');
+try{
+ const score=await (await fetch(query.get('score')||'/examples/score.json')).json();
+ const player=new Lilt.Player(document.getElementById('stage'),Lilt.migrateV2(score),{
+  transparent:query.get('transparent')!=='0',loop:query.get('loop')!=='0',
+  channel:query.get('channel')||'lilt-studio',onError:e=>error.textContent=e.message
+ });
+ window.liltPlayer=player;
+ await document.fonts.ready;player.renderer.invalidate();player.seek(Number(query.get('time')||0));
+ if(query.get('socket'))player.connectSocket(query.get('socket'));
+ if(query.get('autoplay')!=='0')await player.play();
+ // Optional parent control is same-origin only. OBS can instead use WebSocket.
+ addEventListener('message',event=>{if(event.origin===location.origin)player.command(event.data);});
+}catch(e){error.textContent=e.message;}
+</script></body></html>

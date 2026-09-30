@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+@import url('/lilt/fonts.css');
+:root {
+  color-scheme: dark;
+  background: #15151a;
+  color: #dedee6;
+  font-family: Inter, 'Segoe UI', system-ui, sans-serif;
+}
+body {
+  margin: 0;
+}
+a {
+  color: inherit;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+* {
+  box-sizing: border-box;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html:has(.obs-overlay),
+body:has(.obs-overlay) {
+  background: transparent;
+}

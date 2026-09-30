@@ -1,0 +1,589 @@
+{
+  "v": 3,
+  "seed": 240929,
+  "packs": {
+    "core": "3.0.0"
+  },
+  "effects": {},
+  "scenes": [
+    {
+      "id": "scene-1",
+      "name": "A quiet tide",
+      "duration": 7200,
+      "content": [
+        {
+          "id": "scene-1-phrase",
+          "type": "phrase",
+          "children": [
+            {
+              "id": "scene-1-w0",
+              "type": "word",
+              "begin": 1400,
+              "end": 2120,
+              "children": [
+                {
+                  "id": "scene-1-c0",
+                  "text": "揺"
+                },
+                {
+                  "id": "scene-1-c1",
+                  "text": "れ"
+                },
+                {
+                  "id": "scene-1-c2",
+                  "text": "る"
+                }
+              ]
+            },
+            {
+              "id": "scene-1-w1",
+              "type": "word",
+              "begin": 2120,
+              "end": 2360,
+              "children": [
+                {
+                  "id": "scene-1-c3",
+                  "text": "波",
+                  "style": {
+                    "size": 1.9,
+                    "face": "brush",
+                    "color": "#c7e9dd"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "scene-1-w2",
+              "type": "word",
+              "begin": 2360,
+              "end": 5000,
+              "children": [
+                {
+                  "id": "scene-1-c4",
+                  "text": "の"
+                },
+                {
+                  "id": "scene-1-c5",
+                  "text": "よ"
+                },
+                {
+                  "id": "scene-1-c6",
+                  "text": "う"
+                },
+                {
+                  "id": "scene-1-c7",
+                  "text": "に"
+                },
+                {
+                  "id": "scene-1-c8",
+                  "text": "穏"
+                },
+                {
+                  "id": "scene-1-c9",
+                  "text": "や"
+                },
+                {
+                  "id": "scene-1-c10",
+                  "text": "か"
+                },
+                {
+                  "id": "scene-1-c11",
+                  "text": "で"
+                },
+                {
+                  "id": "scene-1-c12",
+                  "text": "良"
+                },
+                {
+                  "id": "scene-1-c13",
+                  "text": "い"
+                },
+                {
+                  "id": "scene-1-c14",
+                  "text": "。"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "layout": "stack",
+      "style": {
+        "face": "mincho",
+        "color": "#eeeae1"
+      },
+      "animations": [
+        {
+          "id": "enter-ribbon",
+          "use": "core/enter-ribbon",
+          "phase": "enter",
+          "each": "character",
+          "stagger": 35,
+          "order": "forward"
+        },
+        {
+          "id": "exit-ebb",
+          "use": "core/exit-ebb",
+          "phase": "exit",
+          "each": "character"
+        },
+        {
+          "id": "hold-wave",
+          "use": "core/hold-wave",
+          "phase": "loop",
+          "each": "character"
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-plain",
+          "use": "core/plain",
+          "select": {
+            "ids": [
+              "scene-1-c0",
+              "scene-1-c1",
+              "scene-1-c2",
+              "scene-1-c4",
+              "scene-1-c5",
+              "scene-1-c6",
+              "scene-1-c7",
+              "scene-1-c8",
+              "scene-1-c9",
+              "scene-1-c10",
+              "scene-1-c11",
+              "scene-1-c12",
+              "scene-1-c13",
+              "scene-1-c14"
+            ]
+          }
+        },
+        {
+          "id": "material-liquid",
+          "use": "core/liquid",
+          "select": {
+            "ids": [
+              "scene-1-c3"
+            ]
+          }
+        }
+      ],
+      "hue": 188,
+      "backdrop": "waves",
+      "camera": 1,
+      "vary": true,
+      "start": 1000,
+      "layer": "voice-a"
+    },
+    {
+      "id": "scene-2",
+      "name": "Last light",
+      "duration": 7200,
+      "content": [
+        {
+          "id": "scene-2-phrase",
+          "type": "phrase",
+          "children": [
+            {
+              "id": "scene-2-w0",
+              "type": "word",
+              "begin": 1400,
+              "end": 2120,
+              "children": [
+                {
+                  "id": "scene-2-c0",
+                  "text": "暮"
+                },
+                {
+                  "id": "scene-2-c1",
+                  "text": "れ"
+                },
+                {
+                  "id": "scene-2-c2",
+                  "text": "る"
+                }
+              ]
+            },
+            {
+              "id": "scene-2-w1",
+              "type": "word",
+              "begin": 2120,
+              "end": 2360,
+              "children": [
+                {
+                  "id": "scene-2-c3",
+                  "text": "夕",
+                  "style": {
+                    "size": 2.2,
+                    "face": "brush",
+                    "color": "#ffd4a3"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "scene-2-w2",
+              "type": "word",
+              "begin": 2360,
+              "end": 5000,
+              "children": [
+                {
+                  "id": "scene-2-c4",
+                  "text": "の"
+                },
+                {
+                  "id": "scene-2-c5",
+                  "text": "よ"
+                },
+                {
+                  "id": "scene-2-c6",
+                  "text": "う"
+                },
+                {
+                  "id": "scene-2-c7",
+                  "text": "に"
+                },
+                {
+                  "id": "scene-2-c8",
+                  "text": "緩"
+                },
+                {
+                  "id": "scene-2-c9",
+                  "text": "や"
+                },
+                {
+                  "id": "scene-2-c10",
+                  "text": "か"
+                },
+                {
+                  "id": "scene-2-c11",
+                  "text": "で"
+                },
+                {
+                  "id": "scene-2-c12",
+                  "text": "良"
+                },
+                {
+                  "id": "scene-2-c13",
+                  "text": "い"
+                },
+                {
+                  "id": "scene-2-c14",
+                  "text": "。"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "layout": "stack",
+      "style": {
+        "face": "mincho",
+        "color": "#eeeae1"
+      },
+      "animations": [
+        {
+          "id": "enter-drift",
+          "use": "core/enter-drift",
+          "phase": "enter",
+          "each": "character",
+          "stagger": 35,
+          "order": "forward"
+        },
+        {
+          "id": "exit-evaporate",
+          "use": "core/exit-evaporate",
+          "phase": "exit",
+          "each": "character"
+        },
+        {
+          "id": "hold-float",
+          "use": "core/hold-float",
+          "phase": "loop",
+          "each": "character"
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-plain",
+          "use": "core/plain",
+          "select": {
+            "ids": [
+              "scene-2-c0",
+              "scene-2-c1",
+              "scene-2-c2",
+              "scene-2-c4",
+              "scene-2-c5",
+              "scene-2-c6",
+              "scene-2-c7",
+              "scene-2-c8",
+              "scene-2-c9",
+              "scene-2-c10",
+              "scene-2-c11",
+              "scene-2-c12",
+              "scene-2-c13",
+              "scene-2-c14"
+            ]
+          }
+        },
+        {
+          "id": "material-ember",
+          "use": "core/ember",
+          "select": {
+            "ids": [
+              "scene-2-c3"
+            ]
+          }
+        }
+      ],
+      "hue": 28,
+      "backdrop": "rays",
+      "camera": 1,
+      "vary": true,
+      "start": 3000,
+      "layer": "voice-b"
+    },
+    {
+      "id": "scene-3",
+      "name": "Into the deep",
+      "duration": 7200,
+      "content": [
+        {
+          "id": "scene-3-phrase",
+          "type": "phrase",
+          "children": [
+            {
+              "id": "scene-3-w0",
+              "type": "word",
+              "begin": 1400,
+              "end": 2000,
+              "children": [
+                {
+                  "id": "scene-3-c0",
+                  "text": "い"
+                },
+                {
+                  "id": "scene-3-c1",
+                  "text": "つ"
+                },
+                {
+                  "id": "scene-3-c2",
+                  "text": "か"
+                }
+              ]
+            },
+            {
+              "id": "scene-3-w1",
+              "type": "word",
+              "begin": 2000,
+              "end": 3000,
+              "children": [
+                {
+                  "id": "scene-3-c3",
+                  "text": "深",
+                  "style": {
+                    "size": 1.25,
+                    "face": "bold",
+                    "color": "#b7c5ff"
+                  }
+                },
+                {
+                  "id": "scene-3-c4",
+                  "text": "い",
+                  "style": {
+                    "size": 1.25,
+                    "face": "bold",
+                    "color": "#b7c5ff"
+                  }
+                },
+                {
+                  "id": "scene-3-c5",
+                  "text": "深",
+                  "style": {
+                    "size": 1.25,
+                    "face": "bold",
+                    "color": "#b7c5ff"
+                  }
+                },
+                {
+                  "id": "scene-3-c6",
+                  "text": "い",
+                  "style": {
+                    "size": 1.25,
+                    "face": "bold",
+                    "color": "#b7c5ff"
+                  }
+                },
+                {
+                  "id": "scene-3-c7",
+                  "text": "底",
+                  "style": {
+                    "size": 1.25,
+                    "face": "bold",
+                    "color": "#b7c5ff"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "scene-3-w2",
+              "type": "word",
+              "begin": 3000,
+              "end": 5000,
+              "children": [
+                {
+                  "id": "scene-3-c8",
+                  "text": "、"
+                },
+                {
+                  "id": "scene-3-c9",
+                  "text": "沈"
+                },
+                {
+                  "id": "scene-3-c10",
+                  "text": "ん"
+                },
+                {
+                  "id": "scene-3-c11",
+                  "text": "で"
+                },
+                {
+                  "id": "scene-3-c12",
+                  "text": "し"
+                },
+                {
+                  "id": "scene-3-c13",
+                  "text": "ま"
+                },
+                {
+                  "id": "scene-3-c14",
+                  "text": "う"
+                },
+                {
+                  "id": "scene-3-c15",
+                  "text": "な"
+                },
+                {
+                  "id": "scene-3-c16",
+                  "text": "ら"
+                },
+                {
+                  "id": "scene-3-c17",
+                  "text": "、"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "layout": "vertical",
+      "style": {
+        "face": "mincho",
+        "color": "#eeeae1"
+      },
+      "animations": [
+        {
+          "id": "enter-rain",
+          "use": "core/enter-rain",
+          "phase": "enter",
+          "each": "character",
+          "stagger": 35,
+          "order": "forward"
+        },
+        {
+          "id": "exit-sink",
+          "use": "core/exit-sink",
+          "phase": "exit",
+          "each": "character"
+        },
+        {
+          "id": "hold-still",
+          "use": "core/hold-still",
+          "phase": "loop",
+          "each": "character"
+        }
+      ],
+      "materials": [
+        {
+          "id": "material-plain",
+          "use": "core/plain",
+          "select": {
+            "ids": [
+              "scene-3-c0",
+              "scene-3-c1",
+              "scene-3-c2",
+              "scene-3-c8",
+              "scene-3-c9",
+              "scene-3-c10",
+              "scene-3-c11",
+              "scene-3-c12",
+              "scene-3-c13",
+              "scene-3-c14",
+              "scene-3-c15",
+              "scene-3-c16",
+              "scene-3-c17"
+            ]
+          }
+        },
+        {
+          "id": "material-chrome",
+          "use": "core/chrome",
+          "select": {
+            "ids": [
+              "scene-3-c3",
+              "scene-3-c4",
+              "scene-3-c5",
+              "scene-3-c6",
+              "scene-3-c7"
+            ]
+          }
+        }
+      ],
+      "hue": 235,
+      "backdrop": "waves",
+      "camera": 1,
+      "vary": true,
+      "start": 12200,
+      "layer": "together"
+    }
+  ],
+  "layers": [
+    {
+      "id": "voice-a",
+      "name": "Voice A · left",
+      "z": 0,
+      "rect": [
+        0,
+        0,
+        0.5,
+        1
+      ]
+    },
+    {
+      "id": "voice-b",
+      "name": "Voice B · right",
+      "z": 1,
+      "rect": [
+        0.5,
+        0,
+        0.5,
+        1
+      ]
+    },
+    {
+      "id": "together",
+      "name": "Together",
+      "z": 2,
+      "rect": [
+        0,
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "duration": 22000,
+  "background": {
+    "hue": 190,
+    "backdrop": "rings"
+  }
+}

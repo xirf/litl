@@ -1,0 +1,6 @@
+node_modules
+.cloudflare
+.next
+dist
+test-results
+public/lilt/fonts.css
