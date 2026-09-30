@@ -1,4 +1,6 @@
 'use client';
+import { Input } from './ui';
+import { ui } from '../lib/ui';
 import { useEffect, useState } from 'react';
 import type { MotionPath } from '../lib/lilt';
 export default function MotionPathEditor({
@@ -62,8 +64,8 @@ export default function MotionPathEditor({
     onChange(next);
   };
   return (
-    <div className="motion-path-editor">
-      <div className="path-graph">
+    <div className={ui('motion-path-editor')}>
+      <div className={ui('path-graph')}>
         <svg viewBox={bounds.join(' ')} aria-label="Cubic Bézier motion path">
           <path
             d={`M${p[0]} L${p[1]} M${p[2]} L${p[3]}`}
@@ -88,6 +90,7 @@ export default function MotionPathEditor({
               stroke="#201828"
               strokeWidth={stroke}
               onPointerDown={(e) => drag(e, i)}
+              data-local-shortcuts
               tabIndex={0}
               role="button"
               aria-label={`Motion path point ${i + 1}`}
@@ -107,14 +110,14 @@ export default function MotionPathEditor({
           ))}
         </svg>
       </div>
-      <div className="path-values">
+      <div className={ui('path-values')}>
         {path.points.map((point, i) => (
           <div key={i}>
             <span>{['Start', 'Handle 1', 'Handle 2', 'End'][i]}</span>
             {point.map((n, j) => (
               <label key={j}>
                 <small>{j ? 'Y' : 'X'}</small>
-                <input
+                <Input
                   type="number"
                   aria-label={`Path ${['start', 'handle 1', 'handle 2', 'end'][i]} ${j ? 'Y' : 'X'}`}
                   value={n}
@@ -130,15 +133,15 @@ export default function MotionPathEditor({
           </div>
         ))}
       </div>
-      <label className="checkbox">
-        <input
+      <label className={ui('checkbox')}>
+        <Input
           type="checkbox"
           checked={!!path.orient}
           onChange={(e) => onChange({ ...path, orient: e.target.checked })}
         />
         Rotate along the path
       </label>
-      <p className="hint">
+      <p className={ui('hint')}>
         Offsets are in composition pixels. Start and end points set the route; purple handles shape
         the bend.
       </p>

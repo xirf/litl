@@ -1,4 +1,6 @@
 'use client';
+import { Input, Select } from './ui';
+import { ui } from '../lib/ui';
 import { useEffect, useState } from 'react';
 import type { Easing } from '../lib/lilt';
 const presets: Record<string, [number, number, number, number]> = {
@@ -63,10 +65,10 @@ export default function BezierEditor({
     target.addEventListener('pointercancel', cancel);
   };
   return (
-    <div className="bezier-editor">
-      <label className="field">
+    <div className={ui('bezier-editor')}>
+      <label className={ui('field')}>
         <span>{label}</span>
-        <select
+        <Select
           aria-label={label}
           value={Array.isArray(value) ? 'bezier' : (value ?? (allowDefault ? 'default' : 'linear'))}
           onChange={(e) =>
@@ -86,11 +88,11 @@ export default function BezierEditor({
           <option value="out">Ease out</option>
           <option value="back">Back / overshoot</option>
           <option value="bezier">Custom cubic Bézier</option>
-        </select>
+        </Select>
       </label>
       {Array.isArray(value) && (
         <>
-          <div className="bezier-graph">
+          <div className={ui('bezier-graph')}>
             <svg viewBox="0 0 240 170" aria-label="Cubic Bézier timing curve">
               <path
                 d="M25 40h190M25 85h190M25 130h190M25 40v90M120 40v90M215 40v90"
@@ -118,6 +120,7 @@ export default function BezierEditor({
                   fill={i ? '#74d7cb' : '#c4a2ff'}
                   stroke="#1e1729"
                   strokeWidth="2"
+                  data-local-shortcuts
                   tabIndex={0}
                   role="button"
                   aria-label={i ? 'Second easing handle' : 'First easing handle'}
@@ -143,9 +146,9 @@ export default function BezierEditor({
               </text>
             </svg>
           </div>
-          <label className="field">
+          <label className={ui('field')}>
             <span>Curve preset</span>
-            <select
+            <Select
               aria-label="Bezier curve preset"
               value="custom"
               onChange={(e) => onChange(presets[e.target.value])}
@@ -154,13 +157,13 @@ export default function BezierEditor({
               {Object.keys(presets).map((name) => (
                 <option key={name}>{name}</option>
               ))}
-            </select>
+            </Select>
           </label>
-          <div className="bezier-values">
+          <div className={ui('bezier-values')}>
             {['X1', 'Y1', 'X2', 'Y2'].map((name, i) => (
               <label key={name}>
                 <span>{name}</span>
-                <input
+                <Input
                   aria-label={`Bezier ${name}`}
                   type="number"
                   min={i % 2 ? -5 : 0}
@@ -174,7 +177,7 @@ export default function BezierEditor({
               </label>
             ))}
           </div>
-          <p className="hint">
+          <p className={ui('hint')}>
             Drag the handles or use arrow keys. Vertical overshoot is allowed; time always moves
             forward.
           </p>

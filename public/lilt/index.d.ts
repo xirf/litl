@@ -99,6 +99,7 @@ export type Layer = {
   opacity?: number;
 };
 export type Score = {
+  markers?: {id:string;time:number;name:string;color:string}[];
   loopRegion?: { start: number; end: number };
   assets?: Record<string, ImageAsset>;
   v: number;

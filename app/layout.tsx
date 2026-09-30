@@ -9,8 +9,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className="bg-zinc-950 has-[.obs-overlay]:bg-transparent">
+      <head>
+        <link rel="stylesheet" href="/lilt/fonts.css" />
+      </head>
+      <body className="m-0 bg-zinc-950 font-sans text-zinc-100 antialiased [color-scheme:dark] has-[.obs-overlay]:bg-transparent">
+        {children}
+      </body>
     </html>
   );
 }

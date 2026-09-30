@@ -57,8 +57,17 @@ at a production preview instead. The tests also run an optional local relay.
   image or video can sit behind the lyric player in OBS.
 - Local autosave, undo/redo, JSON import/edit/export, custom JavaScript effect packs,
   PNG snapshots, and self-contained HTML player export with embedded fonts.
-- Space plays/pauses; arrows step frames; Shift+arrows step seconds; Home seeks to
-  zero. Ctrl/Cmd+Z undoes; Shift+Ctrl/Cmd+Z redoes; Ctrl/Cmd+S saves locally.
+- Search actions with Ctrl/Cmd+K. N creates text, Shift+N creates a shape, Delete
+  removes the selection, Q/W trim to the playhead, and S splits a clip. Trimming and
+  splitting keep at least one second in each resulting clip.
+- M adds a named/color-coded timeline marker; double-click to edit it. Shift+M/Alt+M
+  seek next/previous markers. Markers persist in project JSON and support undo/redo.
+- Space plays/pauses; arrows step frames; Shift+arrows seek seconds; Home/End seek
+  timeline bounds. Page Up/Down scroll horizontally, +/- zoom, and F fits the timeline.
+  I/O set loop bounds, L toggles looping, and Alt+arrows navigate clips.
+- Ctrl/Cmd+Z undoes, Shift+Ctrl/Cmd+Z redoes, Ctrl/Cmd+S saves locally, and
+  Ctrl/Cmd+Alt+N creates a transparent composition. Text/code fields keep their normal
+  editing keys. The Shortcuts dialog lists all commands.
 
 Custom code only executes after an explicit **Register trusted code** action.
 A saved project with custom code requires **Restore & run trusted code** before
@@ -315,3 +324,22 @@ aligned to a recording. The renderer caps DPR at 2; heavy custom materials cost 
 
 The supplied Lilt v3 source is preserved and extended under `public/lilt/`. Font
 license notices are retained in `public/lilt/font-licenses/` and the embedded CSS.
+
+## UI architecture
+
+The editor uses Tailwind utilities and shared controls in `components/ui`, with
+separate library, preview, inspector, timeline and dialog components under
+`components/editor`. The editor controller lives in `hooks/useStudioController.ts`.
+Repeated fields, buttons, tabs, inspector sections, media tools and playheads are
+shared. Icons use a uniform 16px Lucide size; controls use a consistent type scale.
+
+Radix supplies accessible dialogs, tabs, menus and tooltips; cmdk provides searchable
+commands; react-hotkeys-hook manages shortcuts; Zustand persists editor preferences;
+Zod validates marker edits. CodeMirror loads on demand for JSON/JavaScript syntax
+highlighting, completion, folding and code editing. The vanilla renderer remains
+framework-free. Player styles are generated from Tailwind by `npm run build:player`,
+including in offline exports. Font-face assets remain separate for Canvas rendering.
+
+Interaction references: [OpenCut](https://github.com/opencut-app/opencut) and its
+[classic editor](https://github.com/opencut-app/opencut-classic), particularly its
+shared controls, action-oriented shortcuts and discoverable timeline toolbar.

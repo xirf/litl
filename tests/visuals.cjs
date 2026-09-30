@@ -117,3 +117,27 @@ for (const region of [
   assert.throws(() => E.validate(loopScore), /Loop region/);
 }
 console.log('PASS loop region: valid range and invalid/non-finite/outside timeline bounds.');
+const markerScore = structuredClone(require('../public/examples/score.json'));
+markerScore.markers = [{ id: 'chorus', time: 1000, name: 'Chorus', color: '#fbbf24' }];
+E.validate(markerScore);
+for (const patch of [
+  { time: -1 },
+  { time: Infinity },
+  { time: 999999 },
+  { name: '' },
+  { color: 'red' },
+  { id: '' },
+]) {
+  markerScore.markers = [{ id: 'chorus', time: 1000, name: 'Chorus', color: '#fbbf24', ...patch }];
+  assert.throws(() => E.validate(markerScore), /marker/);
+}
+markerScore.markers = [1, 2].map(() => ({
+  id: 'duplicate',
+  time: 1000,
+  name: 'Chorus',
+  color: '#fbbf24',
+}));
+assert.throws(() => E.validate(markerScore), /marker/);
+console.log(
+  'PASS markers: persisted timeline metadata rejects invalid fields, duplicate IDs and out-of-range times.',
+);

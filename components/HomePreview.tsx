@@ -36,31 +36,29 @@ export default function HomePreview() {
     };
   }, []);
   return (
-    <div className="hero-preview">
-      <div className="preview-caption">
-        <span>
-          <i />
+    <div className="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl">
+      <div className="flex items-center justify-between px-4 py-3 text-xs tracking-wider text-zinc-500">
+        <span className="flex items-center gap-2">
+          <i className="size-1.5 rounded-full bg-emerald-400" />
           COMPOSITION 01
         </span>
         <span>WAVES / 波</span>
       </div>
-      <div className="home-canvas-wrap">
-        <canvas ref={canvas} aria-label="Animated Japanese lyric preview" />
+      <div className="aspect-video">
+        <canvas
+          ref={canvas}
+          aria-label="Animated Japanese lyric preview"
+          className="block h-full w-full"
+        />
       </div>
-      <div className="home-preview-footer">
+      <div className="flex items-center justify-between border-t border-zinc-800 px-4 py-3 text-xs text-zinc-500">
         <span>13 movements. Infinite possibilities.</span>
         <span>LIVE RENDER ↗</span>
       </div>
-      <div className="home-mini-timeline">
-        <i />
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <div />
+      <div className="flex gap-1 border-t border-zinc-800 p-4">
+        {Array.from({ length: 7 }, (_, i) => (
+          <span key={i} className="h-7 flex-1 rounded bg-violet-400/20" />
+        ))}
       </div>
     </div>
   );

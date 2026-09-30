@@ -9,6 +9,16 @@ test('studio loads without runtime errors and can edit, undo, and keyframe a cli
   await page.goto('/studio');
   await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
   await expect(page.locator('.stage-frame canvas')).toBeVisible();
+  expect(
+    await page
+      .locator('svg.lucide')
+      .evaluateAll((icons) =>
+        icons.every(
+          (icon) =>
+            getComputedStyle(icon).width === '16px' && getComputedStyle(icon).height === '16px',
+        ),
+      ),
+  ).toBe(true);
   await expect(page.locator('.stage-frame')).toHaveClass(/checker/);
   await page.waitForTimeout(1200);
   await page.screenshot({ path: 'test-results/studio-desktop.png', fullPage: true });
@@ -180,7 +190,10 @@ test('custom packs survive explicit restoration and OBS relay controls a separat
   await expect(page.locator('.effect-stack')).toContainText('User/Helix');
   await page.getByRole('button', { name: 'Edit effect code', exact: true }).click();
   const effectSource = page.getByRole('textbox', { name: 'Custom effect JavaScript' });
-  const originalSource = await effectSource.inputValue();
+  const originalSource =
+    (await effectSource
+      .locator('xpath=ancestor::*[@data-code-value]')
+      .getAttribute('data-code-value')) || '';
   expect(originalSource).toContain('sample');
   await effectSource.fill(originalSource + '\n// Edited in Studio');
   await page.getByRole('button', { name: 'Register trusted code', exact: true }).click();
@@ -355,7 +368,10 @@ test('clip code validation, context menus, region-only playback and touchpad pan
   await expect(page.getByRole('menu', { name: 'Timeline actions' })).toBeVisible();
   await page.getByRole('menuitem', { name: 'Edit clip code', exact: true }).click();
   const code = page.getByRole('textbox', { name: 'Clip JSON', exact: true });
-  const clip = JSON.parse(await code.inputValue());
+  const clip = JSON.parse(
+    (await code.locator('xpath=ancestor::*[@data-code-value]').getAttribute('data-code-value')) ||
+      '',
+  );
   await code.fill(JSON.stringify({ ...clip, duration: 0 }));
   await page.getByRole('button', { name: 'Validate & apply' }).click();
   await expect(page.getByRole('alert')).toBeVisible();

@@ -603,6 +603,28 @@
       }
     }
     const timeline = schedule(score);
+    if (score.markers != null) {
+      if (!Array.isArray(score.markers) || score.markers.length > 128)
+        throw Error('Use at most 128 timeline markers.');
+      const markerIds = new Set();
+      for (const marker of score.markers) {
+        if (
+          !marker ||
+          typeof marker.id !== 'string' ||
+          !marker.id ||
+          markerIds.has(marker.id) ||
+          !Number.isFinite(marker.time) ||
+          marker.time < 0 ||
+          marker.time > timeline.duration ||
+          typeof marker.name !== 'string' ||
+          !marker.name.trim() ||
+          marker.name.length > 80 ||
+          !/^#[0-9a-f]{6}$/i.test(marker.color)
+        )
+          throw Error('Invalid timeline marker.');
+        markerIds.add(marker.id);
+      }
+    }
     if (score.loopRegion) {
       const { start, end } = score.loopRegion;
       if (
