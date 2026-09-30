@@ -99,6 +99,7 @@ export type Layer = {
   opacity?: number;
 };
 export type Score = {
+  loopRegion?: { start: number; end: number };
   assets?: Record<string, ImageAsset>;
   v: number;
   seed: number;

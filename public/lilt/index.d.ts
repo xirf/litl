@@ -99,6 +99,7 @@ export type Layer = {
   opacity?: number;
 };
 export type Score = {
+  loopRegion?: { start: number; end: number };
   assets?: Record<string, ImageAsset>;
   v: number;
   seed: number;
@@ -187,6 +188,7 @@ export declare class Player {
   play(): Promise<void>;
   pause(): this;
   setRate(rate: number): this;
+  setLoop(enabled: boolean): this;
   connect(channel?: string): this;
   connectSocket(url: string): this;
   command(message: unknown): void;

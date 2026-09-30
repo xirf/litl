@@ -40,15 +40,18 @@ const { WebSocket } = require('ws');
     await new Promise((resolve, reject) => {
       late.on('message', (raw) => {
         initial.push(JSON.parse(raw));
-        if (initial.length === 3) resolve();
+        if (initial.length === 4) resolve();
       });
       late.on('error', reject);
     });
     assert.deepEqual(
       initial.map((x) => x.action),
-      ['load', 'rate', 'play'],
+      ['load', 'rate', 'loop', 'play'],
     );
-    assert(initial[2].time >= 2400);
+    assert(initial[3].time >= 2400);
+    next = once(observer, 'message');
+    send({ action: 'loop', loop: true });
+    assert.equal(JSON.parse((await next)[0]).loop, true);
     const rejected = await connect('https://remote.invalid');
     const [code] = await once(rejected, 'close');
     assert.equal(code, 1008);

@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
+import ContextMenu from './ContextMenu';
 import BezierEditor from './BezierEditor';
 import MotionPathEditor from './MotionPathEditor';
 import { embedImage } from '../lib/images';
@@ -124,7 +125,9 @@ export default function Studio() {
     [rate, setRate] = useState(1),
     [loop, setLoop] = useState(false),
     [zoom, setZoom] = useState(1),
-    [timelineWidth, setTimelineWidth] = useState(1168);
+    [timelineWidth, setTimelineWidth] = useState(1168),
+    [swipeMode, setSwipeMode] = useState('pan');
+  const swipeGesture = useRef({ at: 0, delta: 0, handled: false, sign: 0 });
   const [leftTab, setLeftTab] = useState('effects'),
     [inspectorTab, setInspectorTab] = useState('clip'),
     [effectId, setEffectId] = useState(''),
@@ -159,6 +162,16 @@ export default function Studio() {
     [restore, setRestore] = useState<{ score: Score; packSources: Record<string, string> } | null>(
       null,
     );
+  const [jsonTarget, setJsonTarget] = useState<'project' | 'clip' | 'effect'>('project');
+  const [codeError, setCodeError] = useState('');
+  const [regionPreview, setRegionPreview] = useState<{ start: number; end: number } | null>(null);
+  const [context, setContext] = useState<{
+    x: number;
+    y: number;
+    time: number;
+    clipId?: string;
+  } | null>(null);
+  const closeContext = useCallback(() => setContext(null), []);
   const canvas = useRef<HTMLCanvasElement>(null),
     renderer = useRef<Renderer | null>(null),
     scoreRef = useRef<Score | null>(null),
@@ -229,7 +242,10 @@ export default function Studio() {
   const play = useCallback(async () => {
     if (!renderer.current || playingRef.current) return;
     try {
-      if (timeRef.current >= renderer.current.duration) seek(0);
+      const region = loopRef.current ? scoreRef.current?.loopRegion : null;
+      if (region && (timeRef.current < region.start || timeRef.current >= region.end))
+        seek(region.start);
+      else if (timeRef.current >= renderer.current.duration) seek(0);
       if (audio.current?.src) {
         audio.current.playbackRate = rateRef.current;
         await audio.current.play();
@@ -243,12 +259,19 @@ export default function Studio() {
         let next = audio.current?.src
           ? audio.current.currentTime * 1000
           : (now - anchor.current) * rateRef.current;
-        if (next >= renderer.current!.duration) {
+        const region = loopRef.current ? scoreRef.current?.loopRegion : null;
+        const start = region?.start ?? 0,
+          end = region?.end ?? renderer.current!.duration;
+        if (region && next < start) {
+          next = start;
+          seek(next);
+        }
+        if (next >= end) {
           if (loopRef.current) {
-            next %= renderer.current!.duration;
+            next = start + ((next - start) % (end - start));
             seek(next);
           } else {
-            next = renderer.current!.duration;
+            next = end;
             pause();
           }
         }
@@ -271,7 +294,16 @@ export default function Studio() {
   useEffect(() => {
     let cancelled = false;
     audio.current = new Audio();
-    audio.current.onended = () => pause();
+    audio.current.onended = () => {
+      const region = scoreRef.current?.loopRegion;
+      const repeat =
+        loopRef.current && (!region || region.end <= (audio.current?.duration || 0) * 1000 + 1);
+      pause();
+      if (repeat) {
+        seek(region?.start || 0);
+        void play();
+      }
+    };
     audio.current.onerror = () => {
       pause();
       setStatus('This audio file could not be decoded. Try WAV, MP3, or OGG.');
@@ -864,6 +896,7 @@ export default function Studio() {
         setRelayConnected(true);
         send('load', { score: scoreRef.current });
         send('rate', { rate: rateRef.current });
+        send('loop', { loop: loopRef.current });
         send(playingRef.current ? 'play' : 'pause', { time: timeRef.current });
         setStatus('Relay connected · OBS follows the studio transport.');
       };
@@ -938,6 +971,7 @@ export default function Studio() {
       return true;
     } catch (error) {
       setStatus((error as Error).message);
+      setCodeError((error as Error).message);
       return false;
     }
   };
@@ -1022,7 +1056,103 @@ export default function Studio() {
     target.addEventListener('pointerup', end);
     target.addEventListener('pointercancel', cancel);
   };
+  const toggleLoop = (enabled = !loopRef.current) => {
+    loopRef.current = enabled;
+    setLoop(enabled);
+    send('loop', { loop: enabled });
+  };
+  const setRegion = (start: number, end: number) => {
+    const duration = renderer.current?.duration || 0;
+    const a = Math.max(0, Math.min(duration - 1, Math.round(start))),
+      b = Math.max(a + 1, Math.min(duration, Math.round(end)));
+    if (
+      commit((s) => {
+        s.loopRegion = { start: a, end: b };
+      }, 'Loop region updated')
+    )
+      toggleLoop(true);
+  };
+  const loopClip = () => {
+    if (clip) {
+      pause();
+      setRegion(clip.start || 0, (clip.start || 0) + clip.duration);
+      seek(clip.start || 0);
+    }
+  };
+  const markRegion = (edge: 'start' | 'end', at = timeRef.current) => {
+    const duration = renderer.current?.duration || 0,
+      region = scoreRef.current?.loopRegion || { start: 0, end: duration };
+    if (edge === 'start') setRegion(at, Math.max(region.end, at + 1));
+    else setRegion(Math.min(region.start, at - 1), at);
+  };
+  const navigateClip = (direction: number) => {
+    const clips = engineRef
+      .current!.schedule(scoreNow())
+      .clips.slice()
+      .sort((a, b) => a.start - b.start || a.index - b.index);
+    const index = clips.findIndex((c) => c.id === current);
+    selectClip(clips[Math.max(0, Math.min(clips.length - 1, index + direction))].id);
+  };
+  const beginRegionDrag = (event: React.PointerEvent, mode: 'start' | 'end' | 'move') => {
+    if (event.button !== 0 || !score?.loopRegion) return;
+    event.preventDefault();
+    event.stopPropagation();
+    pause();
+    const target = event.currentTarget as HTMLElement,
+      lane = target.closest('.region-lane')!,
+      rect = lane.getBoundingClientRect(),
+      origin = event.clientX;
+    const region = clone(score.loopRegion),
+      duration = renderer.current!.duration,
+      min = 1000 / (score.stage?.fps || 30);
+    let latest = region;
+    target.setPointerCapture(event.pointerId);
+    const move = (e: PointerEvent) => {
+      const raw = ((e.clientX - origin) / rect.width) * duration,
+        delta = e.altKey ? raw : Math.round(raw / min) * min;
+      if (mode === 'move') {
+        const d = Math.max(-region.start, Math.min(duration - region.end, delta));
+        latest = { start: region.start + d, end: region.end + d };
+      } else if (mode === 'start')
+        latest = {
+          ...region,
+          start: Math.max(0, Math.min(region.end - min, region.start + delta)),
+        };
+      else
+        latest = {
+          ...region,
+          end: Math.max(region.start + min, Math.min(duration, region.end + delta)),
+        };
+      setRegionPreview(latest);
+    };
+    const cleanup = () => {
+      target.removeEventListener('pointermove', move);
+      target.removeEventListener('pointerup', end);
+      target.removeEventListener('pointercancel', cancel);
+      setRegionPreview(null);
+    };
+    const end = () => {
+      cleanup();
+      setRegion(latest.start, latest.end);
+    };
+    const cancel = () => cleanup();
+    target.addEventListener('pointermove', move);
+    target.addEventListener('pointerup', end);
+    target.addEventListener('pointercancel', cancel);
+  };
+  const openContext = (event: React.MouseEvent, clipId?: string, at = timeRef.current) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (clipId) selectClip(clipId, false);
+    setContext({
+      x: event.clientX,
+      y: event.clientY,
+      time: Math.max(0, Math.min(renderer.current!.duration, at)),
+      clipId,
+    });
+  };
   const stagePointer = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (event.button !== 0) return;
     const r = renderer.current;
     if (!r || !engine || !score) return;
     const rect = event.currentTarget.getBoundingClientRect();
@@ -1132,11 +1262,62 @@ export default function Studio() {
         event.preventDefault();
         seek(0);
       }
-      if (event.code === 'Escape') setSelected([]);
+      if (event.code === 'Escape') {
+        setSelected([]);
+        closeContext();
+      }
+      if (event.code === 'KeyI') {
+        event.preventDefault();
+        markRegion('start');
+      }
+      if (event.code === 'KeyO') {
+        event.preventDefault();
+        markRegion('end');
+      }
+      if (event.code === 'KeyL') {
+        event.preventDefault();
+        toggleLoop();
+      }
     };
     addEventListener('keydown', handle);
     return () => removeEventListener('keydown', handle);
-  }, [pause, play, seek, undo, modal, packSources]);
+  }, [pause, play, seek, undo, modal, packSources, score, closeContext]);
+  useEffect(() => {
+    const target = timelineScroll.current;
+    if (!target) return;
+    const wheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        setZoom((z) => Math.max(0.5, Math.min(5, z * Math.exp(-e.deltaY * 0.005))));
+        return;
+      }
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
+        e.preventDefault();
+        if (swipeMode === 'clips') {
+          const delta = e.deltaX || e.deltaY,
+            now = performance.now(),
+            gesture = swipeGesture.current;
+          if (now - gesture.at > 180 || Math.sign(delta) !== gesture.sign) {
+            gesture.delta = 0;
+            gesture.handled = false;
+          }
+          gesture.at = now;
+          gesture.sign = Math.sign(delta);
+          gesture.delta += delta;
+          if (!gesture.handled && Math.abs(gesture.delta) >= 40) {
+            gesture.handled = true;
+            navigateClip(Math.sign(gesture.delta));
+          }
+          return;
+        }
+        target.scrollLeft +=
+          (e.deltaX || e.deltaY) *
+          (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? target.clientWidth : 1);
+      }
+    };
+    target.addEventListener('wheel', wheel, { passive: false });
+    return () => target.removeEventListener('wheel', wheel);
+  }, [!!score, swipeMode, current]);
   if (!score || !engine || !clip)
     return (
       <div className="studio loading">
@@ -1180,9 +1361,61 @@ export default function Studio() {
   const currentIndex = score.scenes.findIndex((c) => c.id === clip.id),
     color = palette[currentIndex % palette.length];
   const totalWidth = Math.max(780, Math.round((timelineWidth - 188) * zoom));
-  const openJSON = () => {
-    setJsonDraft(JSON.stringify(score, null, 2));
+  const openJSON = (target: 'project' | 'clip' | 'effect' = 'project') => {
+    setJsonTarget(target);
+    setCodeError('');
+    setJsonDraft(
+      JSON.stringify(
+        target === 'project'
+          ? score
+          : target === 'clip'
+            ? clip
+            : score.effects?.[activeEffect?.use || ''],
+        null,
+        2,
+      ) || '{}',
+    );
     setModal('json');
+  };
+  const editEffectCode = () => {
+    if (activeEffect?.use.startsWith('user/')) {
+      const name = activeEffect.use.slice(5);
+      setPackName(name);
+      setPackSource(packSources[name] || '');
+      setCodeError('');
+      setModal('code');
+    } else if (activeEffect && score.effects?.[activeEffect.use]) openJSON('effect');
+    else {
+      setModal('code');
+      setCodeError('');
+      setPackSource(`{kind: "motion", phase: "enter", duration: 1200,
+ sample({e}) {return {y: 120 * (1-e), opacity: e};}}`);
+      setPackName('custom-motion');
+    }
+  };
+  const applyCode = () => {
+    try {
+      const source = JSON.parse(jsonDraft);
+      if (jsonTarget === 'project') {
+        engine.validate(normalize(engine, source));
+        applyProject(source);
+        return;
+      }
+      const next = clone(score);
+      if (jsonTarget === 'clip')
+        next.scenes[next.scenes.findIndex((c) => c.id === clip.id)] = source;
+      else next.effects![activeEffect.use] = source;
+      engine.validate(next);
+      if (commit((s) => Object.assign(s, next), 'Code applied')) {
+        if (jsonTarget === 'clip') {
+          setCurrent(source.id);
+          setSelected([]);
+        }
+        setModal(null);
+      }
+    } catch (error) {
+      setCodeError((error as Error).message);
+    }
   };
   return (
     <div className="studio">
@@ -1229,7 +1462,9 @@ export default function Studio() {
           />
           <span className="separator" />
           <Button icon="upload" title="Import score" onClick={() => importInput.current?.click()} />
-          <Button icon="code" title="Score & code" onClick={openJSON} />
+          <Button icon="code" className="code-button" title="Edit code" onClick={() => openJSON()}>
+            Code
+          </Button>
           <Button icon="download" className="primary" onClick={() => setModal('export')}>
             Export
           </Button>
@@ -1432,6 +1667,15 @@ export default function Studio() {
               <canvas
                 ref={canvas}
                 onPointerDown={stagePointer}
+                onContextMenu={(e) => {
+                  const r = renderer.current!,
+                    rect = e.currentTarget.getBoundingClientRect();
+                  const hit = r.hit(
+                    ((e.clientX - rect.left) / rect.width) * r.w,
+                    ((e.clientY - rect.top) / rect.height) * r.h,
+                  );
+                  openContext(e, hit === null ? undefined : score.scenes[r.hitScene].id);
+                }}
                 aria-label="Composition preview. Click characters to select them."
               />
               <div className="stage-corner top-left" />
@@ -1481,11 +1725,10 @@ export default function Studio() {
               />
               <Button
                 icon="loop"
-                title="Loop composition"
+                title={score.loopRegion ? 'Loop region' : 'Loop composition'}
                 className={loop ? 'active' : ''}
                 onClick={() => {
-                  loopRef.current = !loop;
-                  setLoop(!loop);
+                  toggleLoop();
                 }}
               />
             </div>
@@ -1936,6 +2179,9 @@ export default function Studio() {
                 )}
                 <section className="inspector-section">
                   <h3>Timing & layer</h3>
+                  <Button icon="code" onClick={() => openJSON('clip')}>
+                    Edit clip code
+                  </Button>
                   <div className="field-grid">
                     <NumberField
                       label="Start"
@@ -2186,6 +2432,9 @@ export default function Studio() {
                           </Button>
                         </>
                       )}
+                      <Button icon="code" onClick={editEffectCode}>
+                        Edit effect code
+                      </Button>
                       {def.phase !== 'loop' && !def.keyframes && (
                         <BezierEditor
                           label="Animation easing"
@@ -2793,8 +3042,149 @@ export default function Studio() {
             />
           </div>
         </div>
+        <div className="loop-region-tools">
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              aria-label="Enable timeline loop"
+              checked={loop}
+              onChange={(e) => toggleLoop(e.target.checked)}
+            />
+            Loop {score.loopRegion ? 'region' : 'composition'}
+          </label>
+          <Button icon="loop" onClick={loopClip}>
+            Loop selected clip
+          </Button>
+          <Button onClick={() => markRegion('start')} title="Set loop start at playhead (I)">
+            Mark in
+          </Button>
+          <Button onClick={() => markRegion('end')} title="Set loop end at playhead (O)">
+            Mark out
+          </Button>
+          {score.loopRegion && (
+            <>
+              <NumberField
+                label="Loop start"
+                value={score.loopRegion.start / 1000}
+                min={0}
+                max={score.loopRegion.end / 1000}
+                step={0.1}
+                suffix="s"
+                onChange={(n) => setRegion(n * 1000, score.loopRegion!.end)}
+              />
+              <NumberField
+                label="Loop end"
+                value={score.loopRegion.end / 1000}
+                min={score.loopRegion.start / 1000}
+                max={duration / 1000}
+                step={0.1}
+                suffix="s"
+                onChange={(n) => setRegion(score.loopRegion!.start, n * 1000)}
+              />
+              <Button
+                title="Clear loop region"
+                onClick={() => {
+                  commit((s) => {
+                    delete s.loopRegion;
+                  }, 'Loop region cleared');
+                }}
+              >
+                Clear region
+              </Button>
+            </>
+          )}
+          <label className="swipe-choice">
+            Swipe{' '}
+            <select
+              aria-label="Horizontal swipe action"
+              value={swipeMode}
+              onChange={(e) => setSwipeMode(e.target.value)}
+            >
+              <option value="pan">Pan timeline</option>
+              <option value="clips">Previous / next clip</option>
+            </select>
+          </label>
+          <span className="hint">
+            Two-finger swipe to pan · Ctrl/pinch to zoom · right-click for actions
+          </span>
+        </div>
         <div className="timeline-scroll" ref={timelineScroll}>
           <div className="timeline-content" style={{ width: totalWidth + 188 }}>
+            <div className="timeline-row region-row">
+              <div className="track-label">
+                <span>LOOP REGION</span>
+              </div>
+              <div
+                className="region-lane"
+                style={{ width: totalWidth }}
+                onContextMenu={(e) =>
+                  openContext(
+                    e,
+                    undefined,
+                    ((e.clientX - e.currentTarget.getBoundingClientRect().left) /
+                      e.currentTarget.getBoundingClientRect().width) *
+                      duration,
+                  )
+                }
+              >
+                {(regionPreview || score.loopRegion) &&
+                  (() => {
+                    const region = regionPreview || score.loopRegion!;
+                    return (
+                      <div
+                        className={`region-range ${loop ? 'enabled' : ''}`}
+                        style={{
+                          left: `${(region.start / duration) * 100}%`,
+                          width: `${((region.end - region.start) / duration) * 100}%`,
+                        }}
+                        onPointerDown={(e) => beginRegionDrag(e, 'move')}
+                      >
+                        <button
+                          aria-label="Drag loop start"
+                          className="region-handle start"
+                          onPointerDown={(e) => beginRegionDrag(e, 'start')}
+                          onKeyDown={(e) => {
+                            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setRegion(
+                                region.start +
+                                  ((e.key === 'ArrowLeft' ? -1 : 1) * 1000) /
+                                    (score.stage?.fps || 30),
+                                region.end,
+                              );
+                            }
+                          }}
+                        >
+                          I
+                        </button>
+                        <span>
+                          {seconds(region.start)} – {seconds(region.end)}
+                        </span>
+                        <button
+                          aria-label="Drag loop end"
+                          className="region-handle end"
+                          onPointerDown={(e) => beginRegionDrag(e, 'end')}
+                          onKeyDown={(e) => {
+                            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setRegion(
+                                region.start,
+                                region.end +
+                                  ((e.key === 'ArrowLeft' ? -1 : 1) * 1000) /
+                                    (score.stage?.fps || 30),
+                              );
+                            }
+                          }}
+                        >
+                          O
+                        </button>
+                      </div>
+                    );
+                  })()}
+              </div>
+            </div>
             <div className="timeline-row ruler-row">
               <div className="track-label ruler-label">
                 <span>LAYER / SOURCE</span>
@@ -2802,8 +3192,18 @@ export default function Studio() {
               </div>
               <div
                 className="time-ruler"
+                onContextMenu={(e) =>
+                  openContext(
+                    e,
+                    undefined,
+                    ((e.clientX - e.currentTarget.getBoundingClientRect().left) /
+                      e.currentTarget.getBoundingClientRect().width) *
+                      duration,
+                  )
+                }
                 style={{ width: totalWidth }}
                 onPointerDown={(e) => {
+                  if (e.button !== 0) return;
                   pause();
                   const rect = e.currentTarget.getBoundingClientRect();
                   seek(((e.clientX - rect.left) / rect.width) * duration);
@@ -2864,7 +3264,7 @@ export default function Studio() {
                     className={`clip-lane ${layer.visible === false ? 'muted-layer' : ''}`}
                     style={{ width: totalWidth, height: Math.max(1, ends.length) * 40 + 16 }}
                     onPointerDown={(e) => {
-                      if (e.target === e.currentTarget) {
+                      if (e.button === 0 && e.target === e.currentTarget) {
                         pause();
                         const rect = e.currentTarget.getBoundingClientRect();
                         seek(((e.clientX - rect.left) / rect.width) * duration);
@@ -2890,6 +3290,7 @@ export default function Studio() {
                               '--clip-color': cc,
                             } as React.CSSProperties
                           }
+                          onContextMenu={(e) => openContext(e, c.id)}
                           onClick={() => selectClip(c.id, false)}
                           onDoubleClick={() => {
                             selectClip(c.id);
@@ -2963,6 +3364,7 @@ export default function Studio() {
                 className="audio-lane"
                 style={{ width: totalWidth }}
                 onClick={(e) => {
+                  if (e.button !== 0) return;
                   pause();
                   const rect = e.currentTarget.getBoundingClientRect();
                   seek(((e.clientX - rect.left) / rect.width) * duration);
@@ -3042,6 +3444,7 @@ export default function Studio() {
                 setBroadcast(e.target.checked);
                 if (e.target.checked) {
                   send('load', { score: scoreRef.current });
+                  send('loop', { loop: loopRef.current });
                   send(playingRef.current ? 'play' : 'seek', { time: timeRef.current });
                 }
               }}
@@ -3132,6 +3535,34 @@ export default function Studio() {
           <Button icon="close" title="Dismiss saved project" onClick={() => setRestore(null)} />
         </div>
       )}
+      {context && (
+        <ContextMenu
+          x={context.x}
+          y={context.y}
+          onClose={closeContext}
+          items={[
+            {
+              label: 'Seek here',
+              action: () => {
+                pause();
+                seek(context.time);
+              },
+            },
+            { label: 'Previous clip', action: () => navigateClip(-1) },
+            { label: 'Next clip', action: () => navigateClip(1) },
+            { label: 'Set loop start here', action: () => markRegion('start', context.time) },
+            { label: 'Set loop end here', action: () => markRegion('end', context.time) },
+            ...(context.clipId
+              ? [
+                  { label: 'Loop this clip', action: loopClip },
+                  { label: 'Edit clip code', action: () => openJSON('clip') },
+                  { label: 'Duplicate clip', action: duplicateClip },
+                  { label: 'Delete clip', action: removeClip, disabled: score.scenes.length < 2 },
+                ]
+              : []),
+          ]}
+        />
+      )}
       {modal && (
         <div
           className="modal-backdrop"
@@ -3164,6 +3595,11 @@ export default function Studio() {
               </div>
               <Button icon="close" title="Close dialog" onClick={() => setModal(null)} />
             </div>
+            {codeError && (modal === 'code' || modal === 'json') && (
+              <p className="code-error" role="alert">
+                {codeError}
+              </p>
+            )}
             {modal === 'export' && (
               <>
                 <p className="modal-description">
@@ -3268,12 +3704,45 @@ export default function Studio() {
             )}
             {modal === 'json' && (
               <>
+                <div className="code-tabs">
+                  <Button
+                    className={jsonTarget === 'project' ? 'active' : ''}
+                    onClick={() => openJSON()}
+                  >
+                    Project JSON
+                  </Button>
+                  <Button
+                    className={jsonTarget === 'clip' ? 'active' : ''}
+                    onClick={() => openJSON('clip')}
+                  >
+                    Clip JSON
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setCodeError('');
+                      if (packSources[packName]) setPackSource(packSources[packName]);
+                      else if (!packSource)
+                        setPackSource(
+                          '{kind: "motion", phase: "enter", duration: 1200, sample({e}) { return {y:120*(1-e),opacity:e}; }}',
+                        );
+                      setModal('code');
+                    }}
+                  >
+                    Effect JavaScript
+                  </Button>
+                </div>
                 <p className="modal-description">
                   Version 3 scores stay compatible. Keyframes and stage settings extend the format.
                 </p>
                 <textarea
                   className="code-editor"
-                  aria-label="Score JSON"
+                  aria-label={
+                    jsonTarget === 'project'
+                      ? 'Score JSON'
+                      : jsonTarget === 'clip'
+                        ? 'Clip JSON'
+                        : 'Effect JSON'
+                  }
                   spellCheck={false}
                   value={jsonDraft}
                   onChange={(e) => setJsonDraft(e.target.value)}
@@ -3282,17 +3751,7 @@ export default function Studio() {
                   <Button icon="download" onClick={exportScore}>
                     Export JSON
                   </Button>
-                  <Button
-                    icon="check"
-                    className="primary"
-                    onClick={() => {
-                      try {
-                        applyProject(JSON.parse(jsonDraft));
-                      } catch (error) {
-                        setStatus((error as Error).message);
-                      }
-                    }}
-                  >
+                  <Button icon="check" className="primary" onClick={applyCode}>
                     Validate & apply
                   </Button>
                 </div>
@@ -3300,6 +3759,31 @@ export default function Studio() {
             )}
             {modal === 'code' && (
               <>
+                <div className="code-tabs">
+                  <Button onClick={() => openJSON()}>Project JSON</Button>
+                  <Button onClick={() => openJSON('clip')}>Clip JSON</Button>
+                  <Button className="active">Effect JavaScript</Button>
+                </div>
+                {Object.keys(packSources).length > 0 && (
+                  <Field label="Saved effect">
+                    <select
+                      aria-label="Saved effect"
+                      value={Object.hasOwn(packSources, packName) ? packName : ''}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setPackName(e.target.value);
+                          setPackSource(packSources[e.target.value]);
+                          setCodeError('');
+                        }
+                      }}
+                    >
+                      <option value="">New effect…</option>
+                      {Object.keys(packSources).map((name) => (
+                        <option key={name}>{name}</option>
+                      ))}
+                    </select>
+                  </Field>
+                )}
                 <p className="modal-description">
                   Custom templates use the same registry as the built-in effects. This runs trusted
                   JavaScript only when you click Register.
@@ -3318,7 +3802,14 @@ export default function Studio() {
                   <span className="hint">
                     Expose numeric parameters with <code>controls</code>.
                   </span>
-                  <Button icon="bolt" className="primary" onClick={() => installPack()}>
+                  <Button
+                    icon="bolt"
+                    className="primary"
+                    onClick={() => {
+                      setCodeError('');
+                      installPack();
+                    }}
+                  >
                     Register trusted code
                   </Button>
                 </div>
@@ -3335,6 +3826,10 @@ export default function Studio() {
                     ['← / →', 'Step one frame'],
                     ['Shift + ← / →', 'Seek one second'],
                     ['Home', 'Go to start'],
+                    ['I / O', 'Set loop start / end'],
+                    ['L', 'Enable / disable loop'],
+                    ['Two-finger horizontal swipe', 'Pan timeline'],
+                    ['Right-click', 'Timeline / clip actions'],
                     ['⌘ / Ctrl + Z', 'Undo'],
                     ['⌘ / Ctrl + Shift + Z', 'Redo'],
                     ['⌘ / Ctrl + S', 'Save locally'],

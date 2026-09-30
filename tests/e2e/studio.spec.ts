@@ -178,6 +178,12 @@ test('custom packs survive explicit restoration and OBS relay controls a separat
   await expect(custom).toBeVisible();
   await custom.click();
   await expect(page.locator('.effect-stack')).toContainText('User/Helix');
+  await page.getByRole('button', { name: 'Edit effect code', exact: true }).click();
+  const effectSource = page.getByRole('textbox', { name: 'Custom effect JavaScript' });
+  const originalSource = await effectSource.inputValue();
+  expect(originalSource).toContain('sample');
+  await effectSource.fill(originalSource + '\n// Edited in Studio');
+  await page.getByRole('button', { name: 'Register trusted code', exact: true }).click();
   await page.waitForTimeout(700);
   await page.reload();
   await expect(
@@ -331,4 +337,100 @@ test('shape/image clips, editable Bézier easing and paths survive offline expor
     types: ['shape', 'image'],
   });
   expect(errors).toEqual([]);
+});
+
+test('clip code validation, context menus, region-only playback and touchpad panning', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/studio');
+  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await page
+    .locator('.timeline-toolbar')
+    .getByRole('button', { name: 'Shape', exact: true })
+    .click();
+  const item = page.locator('.timeline-clip').last();
+  await item.click({ button: 'right' });
+  await expect(page.getByRole('menu', { name: 'Timeline actions' })).toBeVisible();
+  await page.getByRole('menuitem', { name: 'Edit clip code', exact: true }).click();
+  const code = page.getByRole('textbox', { name: 'Clip JSON', exact: true });
+  const clip = JSON.parse(await code.inputValue());
+  await code.fill(JSON.stringify({ ...clip, duration: 0 }));
+  await page.getByRole('button', { name: 'Validate & apply' }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await code.fill(
+    JSON.stringify({ ...clip, name: 'Code badge', shape: { ...clip.shape, kind: 'ellipse' } }),
+  );
+  await page.getByRole('button', { name: 'Validate & apply' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByLabel('Shape', { exact: true })).toHaveValue('ellipse');
+  await page.getByRole('button', { name: 'Loop selected clip', exact: true }).click();
+  await expect(page.getByLabel('Enable timeline loop')).toBeChecked();
+  await page.getByLabel('Loop start', { exact: true }).fill('1.2');
+  await page.getByLabel('Loop end', { exact: true }).fill('1.5');
+  await page.getByRole('button', { name: 'Play (Space)', exact: true }).click();
+  await page.waitForTimeout(850);
+  const displayed = await page.locator('.timeline-right > span').first().innerText();
+  const seconds = Number(displayed.replace('s', ''));
+  expect(seconds).toBeGreaterThanOrEqual(1.2);
+  expect(seconds).toBeLessThanOrEqual(1.5);
+  await page.getByRole('button', { name: 'Pause (Space)', exact: true }).click();
+  await page.getByLabel('Loop end', { exact: true }).fill('10');
+  await page.getByLabel('Loop start', { exact: true }).fill('2');
+  const end = page.getByRole('button', { name: 'Drag loop end', exact: true }),
+    box = (await end.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 20, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.up();
+  expect(Number(await page.getByLabel('Loop end', { exact: true }).inputValue())).toBeGreaterThan(
+    10,
+  );
+  await page.getByLabel('Timeline zoom', { exact: true }).fill('4');
+  const scroller = page.locator('.timeline-scroll');
+  await scroller.hover();
+  await page.mouse.wheel(350, 0);
+  await expect.poll(() => scroller.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+  const url = page.url();
+  await page.mouse.wheel(-1500, 0);
+  await page.waitForTimeout(100);
+  expect(page.url()).toBe(url);
+  await page.getByLabel('Horizontal swipe action', { exact: true }).selectOption('clips');
+  await scroller.hover();
+  await page.mouse.wheel(-100, 0);
+  await expect(page.locator('.selected-summary strong')).not.toHaveText('Code badge');
+  await page.mouse.wheel(100, 0);
+  await expect(page.locator('.selected-summary strong')).toHaveText('Code badge');
+
+  await page.screenshot({ path: 'test-results/loop-region-code.png', fullPage: true });
+  expect(errors).toEqual([]);
+});
+
+test('vanilla player loops a score region with exact overshoot and transports loop mode', async ({
+  page,
+}) => {
+  await page.goto('/player.html?autoplay=0');
+  await page.waitForFunction(() => !!(window as any).liltPlayer);
+  const result = await page.evaluate(async () => {
+    const p = (window as any).liltPlayer;
+    const score = structuredClone(p.renderer.score);
+    score.loopRegion = { start: 1000, end: 1400 };
+    p.load(score);
+    p.setLoop(true);
+    p.seek(5000);
+    await p.play();
+    const initial = p.time;
+    cancelAnimationFrame(p.frame);
+    p.tick(p.anchor + 1850);
+    const wrapped = p.time;
+    p.pause();
+    p.command({ type: 'lilt', action: 'loop', loop: false });
+    p.seek(5000);
+    await p.play();
+    const unrestricted = p.time;
+    p.pause();
+    return { initial, wrapped, unrestricted, loop: p.loop };
+  });
+  expect(result).toEqual({ initial: 1000, wrapped: 1050, unrestricted: 5000, loop: false });
 });

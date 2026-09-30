@@ -2,9 +2,22 @@
 import { WebSocketServer, WebSocket } from 'ws';
 const port = Number(process.env.LILT_RELAY_PORT || 8787);
 const server = new WebSocketServer({ host: '127.0.0.1', port, maxPayload: 8_500_000 });
-const state = { score: null, time: 0, rate: 1, playing: false, at: performance.now() };
-const timestamp = () =>
-  state.time + (state.playing ? (performance.now() - state.at) * state.rate : 0);
+const state = { score: null, time: 0, rate: 1, playing: false, loop: false, at: performance.now() };
+const timestamp = () => {
+  const time = state.time + (state.playing ? (performance.now() - state.at) * state.rate : 0);
+  if (state.loop && state.playing && state.score) {
+    let cursor = 0,
+      end = 0;
+    for (const clip of state.score.scenes) {
+      cursor = (clip.start ?? cursor) + clip.duration;
+      end = Math.max(end, cursor);
+    }
+    const a = state.score.loopRegion?.start ?? 0,
+      b = state.score.loopRegion?.end ?? state.score.duration ?? end;
+    if (b > a && time >= b) return a + ((time - a) % (b - a));
+  }
+  return time;
+};
 const send = (peer, data) => {
   if (peer.readyState === WebSocket.OPEN) peer.send(JSON.stringify({ type: 'lilt', ...data }));
 };
@@ -26,6 +39,7 @@ server.on('connection', (peer, request) => {
   if (state.score) {
     send(peer, { action: 'load', score: state.score });
     send(peer, { action: 'rate', rate: state.rate });
+    send(peer, { action: 'loop', loop: state.loop });
     send(peer, { action: state.playing ? 'play' : 'pause', time: timestamp() });
   }
   peer.on('message', (raw) => {
@@ -33,7 +47,7 @@ server.on('connection', (peer, request) => {
       const message = JSON.parse(raw.toString());
       if (
         message.type !== 'lilt' ||
-        !['load', 'seek', 'play', 'pause', 'rate'].includes(message.action)
+        !['load', 'seek', 'play', 'pause', 'rate', 'loop'].includes(message.action)
       )
         return;
       if (
@@ -53,6 +67,12 @@ server.on('connection', (peer, request) => {
         state.time = 0;
         state.at = performance.now();
         state.playing = false;
+      }
+      if (message.action === 'loop') {
+        if (typeof message.loop !== 'boolean') return;
+        state.time = timestamp();
+        state.at = performance.now();
+        state.loop = message.loop;
       }
       if (message.action === 'rate') {
         if (!Number.isFinite(message.rate) || message.rate < 0.1 || message.rate > 4) return;

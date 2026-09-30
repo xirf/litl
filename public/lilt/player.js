@@ -39,7 +39,9 @@
     }
     async play() {
       if (this.playing) return;
-      if (this.time >= this.renderer.duration) this.seek(0);
+      const region = this.loop ? this.renderer.score.loopRegion : null;
+      if (region && (this.time < region.start || this.time >= region.end)) this.seek(region.start);
+      else if (this.time >= this.renderer.duration) this.seek(0);
       if (this.audio?.src) {
         this.audio.playbackRate = this.rate;
         await this.audio.play();
@@ -60,10 +62,18 @@
         let time = this.audio?.src
           ? this.audio.currentTime * 1000
           : (now - this.anchor) * this.rate;
-        if (time >= this.renderer.duration) {
+        const region = this.loop ? this.renderer.score.loopRegion : null;
+        const start = region?.start ?? 0,
+          end = region?.end ?? this.renderer.duration;
+        if (region && time < start) {
+          this.seek(start);
+          time = start;
+        }
+        if (time >= end) {
           if (this.loop) {
-            this.seek(time % this.renderer.duration);
+            this.seek(start + ((time - start) % (end - start)));
             time = this.time;
+            if (this.audio?.src && this.audio.paused) this.audio.play().catch(this.onError);
           } else {
             time = this.renderer.duration;
             this.pause();
@@ -86,6 +96,11 @@
       if (this.audio) this.audio.playbackRate = rate;
       return this;
     }
+    setLoop(enabled) {
+      if (typeof enabled !== 'boolean') throw Error('Loop expects a boolean.');
+      this.loop = enabled;
+      return this;
+    }
     command(message) {
       if (!message || message.type !== 'lilt') return;
       try {
@@ -100,6 +115,7 @@
           if (message.time != null) this.seek(message.time);
         }
         if (message.action === 'rate') this.setRate(message.rate);
+        if (message.action === 'loop') this.setLoop(message.loop);
       } catch (error) {
         this.onError(error);
       }

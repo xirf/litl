@@ -103,3 +103,17 @@ assert.throws(() => E.validate(score), /assets/);
 console.log(
   'PASS visuals: CSS Bézier solving, overshoot, interpolation, spatial paths/tangents, visual selectors, deterministic seeking, animation easing overrides and validation.',
 );
+const loopScore = structuredClone(require('../public/examples/score.json'));
+loopScore.loopRegion = { start: 1000, end: 2400 };
+E.validate(loopScore);
+for (const region of [
+  { start: -1, end: 2400 },
+  { start: 2400, end: 2400 },
+  { start: 2500, end: 1000 },
+  { start: 0, end: 999999 },
+  { start: NaN, end: 1000 },
+]) {
+  loopScore.loopRegion = region;
+  assert.throws(() => E.validate(loopScore), /Loop region/);
+}
+console.log('PASS loop region: valid range and invalid/non-finite/outside timeline bounds.');

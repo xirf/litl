@@ -258,6 +258,52 @@ ligatures for scripts such as Arabic and Indic writing. Lilt currently rasterize
 graphemes independently, so it cannot preserve all word-level shaping. For now,
 import shaped lettering as a transparent image to animate the intact word.
 
+## Code editing, loop regions and timeline controls
+
+Use **Code** in the header to edit Project JSON or Clip JSON, or to create/edit
+Effect JavaScript. Invalid data stays in the editor with a validation message.
+Project and clip changes use normal undo and save; saved JavaScript templates persist with the project. **Edit effect code** opens a saved custom
+JavaScript template or a local declarative definition. Built-in effects can be
+used as a starting point for a new custom template. The Saved effect menu lets
+you return to registered templates; code runs only when you click Register.
+
+Use **Loop selected clip** to set a work area, or **Mark in / Mark out** (`I` / `O`)
+at the playhead. Drag the I/O handles to trim it, or drag its middle to move it.
+Numeric start/end fields use seconds. `L` enables/disables looping; Clear region
+returns looping to the full composition. Region bounds are saved in project JSON
+and exported HTML. They apply when loop mode is enabled in the editor/player:
+
+```js
+score.loopRegion = { start: 1000, end: 3400 }; // milliseconds; end is exclusive
+player.load(score).setLoop(true);
+await player.play();
+// Transport: {type: 'lilt', action: 'loop', loop: true}
+```
+
+Audio and animation wrap at the same bounds. Seeking works across the whole
+composition; starting playback outside an enabled region begins at its start.
+Two-finger horizontal scrolling pans the timeline and contains browser overscroll.
+Choose **Swipe → Previous / next clip** for clip navigation instead. Ctrl+scroll
+or a pinch gesture zooms. Right-click clips, the preview or ruler for code editing,
+duplicate/delete, previous/next, seeking and loop-marker actions. Context menus
+also support arrow keys and Escape.
+
+## GitHub Actions deployment
+
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) checks formatting,
+types, runtime tests and seven production browser flows before deploying the
+Cloudflare Worker to **litl.andka.id**. Pushes to `main` deploy automatically;
+pull requests run checks without receiving the Cloudflare token. You can also
+run the workflow manually from the Actions tab on `main`.
+
+Add a repository Actions secret named **CLOUDFLARE_API_TOKEN** in
+[repository settings](https://github.com/xirf/litl/settings/secrets/actions).
+The account ID is already configured and is not a credential. Use the authorized
+Cloudflare deployment token, and replace this secret when you rotate it. Tokens
+are never stored in source files. GitHub's Secrets API currently rejects the
+session's integration token with HTTP 403, so the secret must be added in GitHub
+settings or through a connection with repository Secrets write permission.
+
 ## Scope and attribution
 
 This is a focused lyric/motion editor, not a full After Effects implementation.

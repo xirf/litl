@@ -602,7 +602,18 @@
         }
       }
     }
-    schedule(score);
+    const timeline = schedule(score);
+    if (score.loopRegion) {
+      const { start, end } = score.loopRegion;
+      if (
+        !Number.isFinite(start) ||
+        !Number.isFinite(end) ||
+        start < 0 ||
+        end <= start ||
+        end > timeline.duration
+      )
+        throw Error('Loop region must have 0 ≤ start < end ≤ timeline duration (milliseconds).');
+    }
     return score;
   }
   function compileScene(score, scene) {
