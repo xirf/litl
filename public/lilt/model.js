@@ -27,7 +27,84 @@
     smooth: (t) => t * t * (3 - 2 * t),
     back: (t) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2,
   };
+  // CSS-style cubic Bézier timing solves x(t) before evaluating y(t).
+  function cubic(a, b, c, d, t) {
+    const q = 1 - t;
+    return q * q * q * a + 3 * q * q * t * b + 3 * q * t * t * c + t * t * t * d;
+  }
+  function validateEase(value) {
+    if (value == null) return;
+    if (typeof value === 'string' && Object.hasOwn(easing, value)) return;
+    if (
+      !Array.isArray(value) ||
+      value.length !== 4 ||
+      !value.every(Number.isFinite) ||
+      value[0] < 0 ||
+      value[0] > 1 ||
+      value[2] < 0 ||
+      value[2] > 1 ||
+      Math.abs(value[1]) > 5 ||
+      Math.abs(value[3]) > 5
+    )
+      throw Error('Ease needs a named preset or [x1,y1,x2,y2]; x must be 0–1 and y −5–5.');
+  }
+  function easeValue(value, p, fallback = 'linear') {
+    p = clamp(p);
+    if (!Array.isArray(value)) return (easing[value] || easing[fallback])(p);
+    if (p === 0 || p === 1) return p;
+    let lo = 0,
+      hi = 1,
+      t = p;
+    for (let i = 0; i < 28; i++) {
+      const x = cubic(0, value[0], value[2], 1, t);
+      if (Math.abs(x - p) < 1e-8) break;
+      if (x < p) lo = t;
+      else hi = t;
+      t = (lo + hi) / 2;
+    }
+    return cubic(0, value[1], value[3], 1, t);
+  }
+  function pathPoint(path, p) {
+    const points = path.points,
+      t = clamp(p),
+      q = 1 - t;
+    const x = cubic(points[0][0], points[1][0], points[2][0], points[3][0], t),
+      y = cubic(points[0][1], points[1][1], points[2][1], points[3][1], t);
+    let dx =
+      3 * q * q * (points[1][0] - points[0][0]) +
+      6 * q * t * (points[2][0] - points[1][0]) +
+      3 * t * t * (points[3][0] - points[2][0]);
+    let dy =
+      3 * q * q * (points[1][1] - points[0][1]) +
+      6 * q * t * (points[2][1] - points[1][1]) +
+      3 * t * t * (points[3][1] - points[2][1]);
+    if (Math.hypot(dx, dy) < 1e-8) {
+      const a = t < 0.5 ? points[0] : points[2],
+        b = t < 0.5 ? points[1] : points[3];
+      dx = b[0] - a[0];
+      dy = b[1] - a[1];
+    }
+    return { x, y, ...(path.orient ? { rotation: Math.atan2(dy, dx) } : {}) };
+  }
+  function validatePath(path) {
+    if (!path) return;
+    if (
+      !Array.isArray(path.points) ||
+      path.points.length !== 4 ||
+      path.points.some(
+        (point) =>
+          !Array.isArray(point) ||
+          point.length !== 2 ||
+          point.some((n) => !Number.isFinite(n) || Math.abs(n) > 10000),
+      ) ||
+      (path.orient != null && typeof path.orient !== 'boolean')
+    )
+      throw Error(
+        'A cubic motion path needs four finite [x,y] points and optional orient:boolean.',
+      );
+  }
   const packs = new Map();
+
   function registerPack(pack) {
     if (!pack || !/^[-\w]+$/.test(pack.id) || typeof pack.version !== 'string' || !pack.effects)
       throw Error('Pack needs id, version and effects.');
@@ -38,10 +115,15 @@
         def.kind === 'motion' &&
         typeof def.sample !== 'function' &&
         !def.tracks &&
-        !def.keyframes
+        !def.keyframes &&
+        !def.path
       )
         throw Error(id + ' needs sample() or tracks.');
-      if (def.kind === 'motion') validateKeyframes(def, id);
+      if (def.kind === 'motion') {
+        validateKeyframes(def, id);
+        validateEase(def.ease);
+        validatePath(def.path);
+      }
       if (
         def.kind === 'material' &&
         typeof def.paint !== 'function' &&
@@ -66,7 +148,7 @@
       ...Object.entries(score.effects || {}).map(([id, def]) => ({ id, ...def })),
     ];
   }
-  function contentText(content) {
+  function contentText(content = []) {
     return content.map((n) => (n.children ? contentText(n.children) : n.text)).join('');
   }
   function walk(nodes, fn) {
@@ -76,6 +158,29 @@
     }
   }
   function flatten(scene) {
+    if (scene.type === 'shape' || scene.type === 'image') {
+      const id = scene.id + '-object';
+      return {
+        glyphs: [
+          {
+            id,
+            ch: scene.type === 'shape' ? '◈' : '▧',
+            i: 0,
+            nodeId: id,
+            localIndex: 0,
+            ids: [id, scene.id],
+            tags: [],
+            word: id,
+            phrase: scene.id,
+            begin: 0,
+            end: scene.duration,
+            style: scene.style || {},
+            kind: scene.type,
+          },
+        ],
+        units: [{ id, type: scene.type, begin: 0, end: scene.duration }],
+      };
+    }
     const glyphs = [],
       units = [];
     function visit(
@@ -220,7 +325,10 @@
       cursor = end;
       return {
         ...scene,
-        text: contentText(scene.content),
+        text:
+          scene.type === 'shape' || scene.type === 'image'
+            ? scene.name || scene.type
+            : contentText(scene.content),
         index,
         start,
         end,
@@ -255,7 +363,7 @@
         b = frames[i];
       if (ms <= b.time) {
         const progress = clamp((ms - a.time) / (b.time - a.time));
-        const e = (easing[a.ease] || easing.linear)(progress);
+        const e = easeValue(a.ease, progress);
         return a.value + (b.value - a.value) * e;
       }
     }
@@ -278,10 +386,14 @@
           f.time > 60000 ||
           f.time <= previous ||
           !Number.isFinite(f.value) ||
-          Math.abs(f.value) > 10000 ||
-          (f.ease && !easing[f.ease])
+          Math.abs(f.value) > 10000
         )
           throw Error('Invalid keyframe ' + id + '.' + prop);
+        try {
+          validateEase(f.ease);
+        } catch {
+          throw Error('Invalid keyframe ease ' + id + '.' + prop);
+        }
         previous = f.time;
       }
     }
@@ -295,7 +407,23 @@
       score.scenes.length > 100
     )
       throw Error('Expected v:3, seed, and 1–100 scenes.');
-    if (JSON.stringify(score).length > 500000) throw Error('Score exceeds 500 KB.');
+    if (JSON.stringify(score).length > 8_000_000)
+      throw Error('Project exceeds 8 MB including image assets.');
+    const assets = Object.entries(score.assets || {});
+    if (assets.length > 32) throw Error('Maximum 32 image assets.');
+    for (const [id, asset] of assets) {
+      if (
+        !id ||
+        !asset ||
+        asset.type !== 'image' ||
+        typeof asset.src !== 'string' ||
+        asset.src.length > 2_000_000 ||
+        !/^(https?:\/\/|data:image\/(png|jpeg|webp);base64,)/i.test(asset.src)
+      )
+        throw Error(
+          'Image assets need a PNG/JPEG/WebP data URL or an HTTP(S) URL, within 2 MB per asset.',
+        );
+    }
     if (
       score.motion != null &&
       (!Number.isFinite(score.motion) || score.motion < 0 || score.motion > 1.6)
@@ -321,7 +449,7 @@
       if (packs.get(id)?.version !== v)
         throw Error('Required pack ' + id + '@' + v + ' is unavailable.');
     for (const [id, def] of Object.entries(score.effects || {})) {
-      if (def.kind !== 'motion' || (!def.tracks && !def.keyframes) || def.sample)
+      if (def.kind !== 'motion' || (!def.tracks && !def.keyframes && !def.path) || def.sample)
         throw Error('JSON effects use kind:motion and tracks or keyframes.');
       for (const [prop, arr] of Object.entries(def.tracks || {})) {
         if (
@@ -334,6 +462,8 @@
           throw Error('Invalid keyframe track ' + id + '.' + prop);
       }
       validateKeyframes(def, id);
+      validateEase(def.ease);
+      validatePath(def.path);
     }
     const allIds = new Set();
     let total = 0;
@@ -343,9 +473,57 @@
       if (!Number.isFinite(scene.duration) || scene.duration < 1000 || scene.duration > 60000)
         throw Error('Scene duration must be 1000–60000 ms.');
       total += scene.duration;
-      if (!['line', 'stack', 'arc', 'diagonal', 'vertical', 'hero', 'stair'].includes(scene.layout))
+      if (scene.type && !['text', 'shape', 'image'].includes(scene.type))
+        throw Error('Unknown clip type.');
+      const visual = scene.type === 'shape' || scene.type === 'image';
+      if (visual) {
+        const item = scene[scene.type];
+        if (
+          !item ||
+          !Number.isFinite(item.width) ||
+          !Number.isFinite(item.height) ||
+          item.width < 1 ||
+          item.height < 1 ||
+          item.width > 4096 ||
+          item.height > 4096
+        )
+          throw Error('Visual clip dimensions must be 1–4096 pixels.');
+        if (scene.type === 'shape') {
+          if (!['rectangle', 'ellipse', 'triangle', 'star', 'polygon', 'line'].includes(item.kind))
+            throw Error('Unknown shape kind.');
+          for (const key of ['fill', 'stroke'])
+            if (item[key] != null && item[key] !== 'none' && !/^#[0-9a-f]{6}$/i.test(item[key]))
+              throw Error('Shape colors need six-digit hex or none.');
+          for (const key of ['strokeWidth', 'radius'])
+            if (
+              item[key] != null &&
+              (!Number.isFinite(item[key]) || item[key] < 0 || item[key] > 500)
+            )
+              throw Error('Invalid shape ' + key);
+          if (
+            item.sides != null &&
+            (!Number.isInteger(item.sides) || item.sides < 3 || item.sides > 32)
+          )
+            throw Error('Use 3–32 shape points.');
+          if (
+            item.innerRadius != null &&
+            (!Number.isFinite(item.innerRadius) ||
+              item.innerRadius < 0.05 ||
+              item.innerRadius > 0.95)
+          )
+            throw Error('Star inner radius must be .05–.95.');
+        } else {
+          if (!score.assets?.[item.asset]) throw Error('Missing image asset.');
+          if (item.fit && !['contain', 'cover', 'stretch'].includes(item.fit))
+            throw Error('Unknown image fit.');
+        }
+      }
+      if (
+        !visual &&
+        !['line', 'stack', 'arc', 'diagonal', 'vertical', 'hero', 'stair'].includes(scene.layout)
+      )
         throw Error('Unknown layout ' + scene.layout);
-      if (!Array.isArray(scene.content) || !scene.content.length)
+      if (!visual && (!Array.isArray(scene.content) || !scene.content.length))
         throw Error('Scene needs content.');
       checkStyle(scene.style);
       let count = 0;
@@ -371,10 +549,13 @@
           }
         }
       }
-      nodes(scene.content);
+      if (!visual) nodes(scene.content);
       if (count > 150) throw Error('Maximum 150 graphemes per scene.');
       const flat = flatten(scene);
-      flat.glyphs.forEach((g) => ids.add(g.id));
+      flat.glyphs.forEach((g) => {
+        ids.add(g.id);
+        g.ids.forEach((id) => ids.add(id));
+      });
       for (const rule of scene.styles || []) {
         validateSelector(rule.select, ids);
         checkStyle(rule.style);
@@ -385,6 +566,7 @@
       for (const inst of instances) {
         if (!inst.id || seen.has(inst.id)) throw Error('Effect instance IDs must be unique.');
         seen.add(inst.id);
+        validateEase(inst.ease);
         const def = definition(score, inst.use);
         const pack = inst.use.split('/')[0];
         if (inst.use.includes('/') && !deps[pack])
@@ -499,12 +681,16 @@
       span = stagger * (inst.groups.length - 1);
     const start = inst.at ?? (phase === 'exit' ? group.end - duration - span : group.begin),
       age = ms - start - group.rank * stagger;
-    const p = clamp(age / duration),
-      e = (easing[def.ease] || easing.out)(p);
+    const progress = clamp(age / duration),
+      override = inst.ease != null,
+      p = override ? easeValue(inst.ease, progress) : progress,
+      e = easeValue(inst.ease ?? def.ease, progress, 'out');
     if (phase === 'loop' && (age < 0 || ms > group.end)) return {};
     const ctx = {
       p,
       e,
+      progress,
+      easingOverride: override,
       phase,
       t: ms / 1000,
       time: age / 1000,
@@ -524,6 +710,8 @@
         out[prop] = values[i] + (values[i + 1] - values[i]) * (pos - i);
       }
     }
+    if (def.path)
+      out = { ...out, ...pathPoint(def.path, easeValue(inst.ease ?? def.ease, progress)) };
     if (def.keyframes) {
       out = { ...out };
       for (const [prop, frames] of Object.entries(def.keyframes))
@@ -573,6 +761,9 @@
     hash,
     random,
     easing,
+    easeValue,
+    validateEase,
+    pathPoint,
     packs,
     registerPack,
     definition,

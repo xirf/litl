@@ -7,7 +7,7 @@
     ease = E.easing;
   function motion(id, c, phase) {
     const { i, n, p, t, r } = c,
-      e = ease.out(p),
+      e = c.easingOverride ? p : ease.out(p),
       q = 1 - e,
       a = r(1) * TAU,
       rad = 120 + r(2) * 180;
@@ -104,7 +104,7 @@
           break;
       }
     else {
-      const z = p * p;
+      const z = c.easingOverride ? p : p * p;
       switch (id) {
         case 'ebb':
           s.x = -160 * z;

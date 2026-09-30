@@ -26,7 +26,22 @@ export type Selector = {
   basedOn?: string;
   units?: string;
 };
+export type Easing = string | [number, number, number, number];
+export type MotionPath = { points: [number, number][]; orient?: boolean };
+export type Shape = {
+  kind: string;
+  width: number;
+  height: number;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  radius?: number;
+  sides?: number;
+  innerRadius?: number;
+};
+export type ImageAsset = { type: 'image'; src: string; name?: string };
 export type Effect = {
+  ease?: Easing;
   id: string;
   use: string;
   phase?: string;
@@ -39,12 +54,13 @@ export type Effect = {
   select?: Selector;
   params?: Record<string, number>;
 };
-export type Keyframe = { time: number; value: number; ease?: string };
+export type Keyframe = { time: number; value: number; ease?: Easing };
 export type Definition = {
+  path?: MotionPath;
   kind: string;
   phase?: string;
   duration?: number;
-  ease?: string;
+  ease?: Easing;
   tracks?: Record<string, number[]>;
   keyframes?: Record<string, Keyframe[]>;
   defaults?: Record<string, number>;
@@ -53,6 +69,9 @@ export type Definition = {
   id?: string;
 };
 export type Clip = {
+  type?: 'text' | 'shape' | 'image';
+  shape?: Shape;
+  image?: { asset: string; width: number; height: number; fit?: string };
   id: string;
   name?: string;
   start?: number;
@@ -80,6 +99,7 @@ export type Layer = {
   opacity?: number;
 };
 export type Score = {
+  assets?: Record<string, ImageAsset>;
   v: number;
   seed: number;
   name?: string;
@@ -100,6 +120,7 @@ export interface Renderer {
   invalidate(): void;
   draw(time: number): void;
   destroy(): void;
+  ready(): Promise<void>;
   hit(x: number, y: number): number | null;
   hitScene: number;
   focus: number;
@@ -135,6 +156,8 @@ export interface Engine {
   definition(score: Score, id: string): Definition;
   registerPack(pack: unknown): void;
   keyframeValue(frames: Keyframe[], time: number): number;
+  easeValue(ease: Easing | undefined, progress: number): number;
+  pathPoint(path: MotionPath, progress: number): { x: number; y: number; rotation?: number };
   faces: Record<string, { family: string; weight: number }>;
   layouts: string[];
 }

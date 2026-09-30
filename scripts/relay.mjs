@@ -1,7 +1,7 @@
 // Optional local transport between Studio and OBS. Serves no web pages or files.
 import { WebSocketServer, WebSocket } from 'ws';
 const port = Number(process.env.LILT_RELAY_PORT || 8787);
-const server = new WebSocketServer({ host: '127.0.0.1', port, maxPayload: 600_000 });
+const server = new WebSocketServer({ host: '127.0.0.1', port, maxPayload: 8_500_000 });
 const state = { score: null, time: 0, rate: 1, playing: false, at: performance.now() };
 const timestamp = () =>
   state.time + (state.playing ? (performance.now() - state.at) * state.rate : 0);

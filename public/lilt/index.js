@@ -19,4 +19,6 @@ export const {
   editText,
   migrateV2,
   keyframeValue,
+  easeValue,
+  pathPoint,
 } = Lilt;

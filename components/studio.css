@@ -2252,3 +2252,83 @@
   padding: 7px 9px;
   background: #739f8420;
 }
+
+.bezier-editor,
+.motion-path-editor {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0;
+}
+.bezier-graph,
+.path-graph {
+  border: 1px solid #3b3147;
+  border-radius: 8px;
+  background: #19141f;
+  overflow: hidden;
+}
+.bezier-graph svg,
+.path-graph svg {
+  width: 100%;
+  height: 170px;
+  display: block;
+}
+.bezier-graph svg text {
+  font-size: 8px;
+  fill: #a38cae;
+  letter-spacing: 1px;
+}
+.bezier-graph circle[role],
+.path-graph circle[role] {
+  cursor: grab;
+  touch-action: none;
+}
+.bezier-graph circle[role]:focus,
+.path-graph circle[role]:focus {
+  stroke: white;
+  outline: none;
+}
+.bezier-values {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.bezier-values label,
+.path-values label {
+  display: grid;
+  gap: 4px;
+  font-size: 10px;
+  color: #aa98b4;
+}
+.bezier-values input,
+.path-values input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 4px;
+}
+.path-values {
+  display: grid;
+  gap: 6px;
+}
+.path-values > div {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+}
+.project-tools {
+  flex-wrap: wrap;
+}
+@media (max-width: 720px) {
+  .timeline-toolbar {
+    height: auto;
+    min-height: 44px;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .timeline-toolbar > div {
+    flex-wrap: wrap;
+  }
+}

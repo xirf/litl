@@ -215,3 +215,120 @@ test('custom packs survive explicit restoration and OBS relay controls a separat
   expect(errors).toEqual([]);
   await player.close();
 });
+
+test('shape/image clips, editable Bézier easing and paths survive offline export', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/studio');
+  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await page
+    .locator('.timeline-toolbar')
+    .getByRole('button', { name: 'Shape', exact: true })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Shape geometry' })).toBeVisible();
+  await page.getByLabel('Shape', { exact: true }).selectOption('star');
+  await page.getByLabel('Width', { exact: true }).fill('200');
+  await page.getByRole('tab', { name: 'Keys', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Bézier path' }).click();
+  await expect(page.getByLabel('Cubic Bézier motion path', { exact: true })).toBeVisible();
+  await page.getByLabel('Path start X', { exact: true }).fill('-180');
+  await page.getByLabel('Rotate along the path', { exact: true }).check();
+  await page.getByLabel('Path timing', { exact: true }).selectOption('bezier');
+  await page.getByLabel('Bezier X1', { exact: true }).fill('.2');
+  const handle = page.getByRole('button', { name: 'Second easing handle' });
+  const playheadBefore = await page.locator('.timeline-right').innerText();
+  await handle.focus();
+  await handle.press('ArrowLeft');
+  expect(await page.locator('.timeline-right').innerText()).toBe(playheadBefore);
+  await page.waitForTimeout(650);
+  const shape = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('lilt-studio-project-v1')!).score.scenes.at(-1),
+  );
+  expect(shape.type).toBe('shape');
+  expect(shape.shape.kind).toBe('star');
+  expect(shape.shape.width).toBe(200);
+  expect(shape.animations[0].ease).toEqual([0.2, 0, 0.56, 1]);
+  const easingBox = (await page
+    .getByRole('button', { name: 'First easing handle' })
+    .boundingBox())!;
+  await page.mouse.move(easingBox.x + easingBox.width / 2, easingBox.y + easingBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    easingBox.x + easingBox.width / 2 + 20,
+    easingBox.y + easingBox.height / 2 - 10,
+    { steps: 5 },
+  );
+  await page.mouse.up();
+  await expect(page.getByLabel('Bezier X1', { exact: true })).not.toHaveValue('0.2');
+
+  await page.screenshot({ path: 'test-results/bezier-path-studio.png', fullPage: true });
+  // Generate a transparent PNG and exercise actual image decoding/embedding.
+  const png = await page.evaluate(() => {
+    const c = document.createElement('canvas');
+    c.width = 80;
+    c.height = 40;
+    const x = c.getContext('2d')!;
+    x.fillStyle = '#ff3300';
+    x.fillRect(10, 5, 60, 30);
+    return c.toDataURL().split(',')[1];
+  });
+  await page.locator('input[type=file][accept="image/png,image/jpeg,image/webp"]').setInputFiles({
+    name: 'badge.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(png, 'base64'),
+  });
+  await expect(page.getByRole('heading', { name: 'Image geometry' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Keys', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Bézier path' }).click();
+  await page.getByLabel('Value at playhead', { exact: true }).fill('35');
+  await page.getByRole('button', { name: 'Add / update keyframe' }).click();
+  await page.getByLabel('Interpolation to next key', { exact: true }).selectOption('bezier');
+  await expect(page.getByLabel('Cubic Bézier timing curve', { exact: true })).toHaveCount(2);
+  await page.getByRole('button', { name: 'Export', exact: true }).click();
+  const pending = page.waitForEvent('download');
+  await page.getByRole('button', { name: /Standalone player/ }).click();
+  const download = await pending;
+  const html = await readFile((await download.path())!, 'utf8');
+  expect(html).toContain('data:image/webp;base64');
+  const player = await page.context().newPage();
+  player.on('pageerror', (e) => errors.push(e.message));
+  await player.context().setOffline(true);
+  await player.setContent(html);
+  await player.waitForFunction(() => !!(window as any).liltPlayer);
+  const result = await player.evaluate(async () => {
+    const p = (window as any).liltPlayer;
+    p.pause();
+    await p.renderer.ready();
+    const scene = p.renderer.score.scenes.at(-1);
+    p.seek(scene.start + 2000);
+    const pixels = () =>
+      p.renderer.ctx.getImageData(0, 0, p.renderer.canvas.width, p.renderer.canvas.height).data;
+    const a = pixels();
+    p.seek(scene.start + 4000);
+    p.seek(scene.start + 2000);
+    const b = pixels();
+    const cache = p.renderer.caches.get(p.renderer.score.scenes.length - 1);
+    const source = cache.glyphs[0].bitmap
+      .getContext('2d')
+      .getImageData(0, 0, cache.glyphs[0].bitmap.width, cache.glyphs[0].bitmap.height).data;
+    return {
+      same: a.every((v: number, i: number) => v === b[i]),
+      transparent: a[3] === 0,
+      red: source.some(
+        (v: number, i: number) => i % 4 === 0 && v > 220 && source[i + 1] < 90 && source[i + 3] > 0,
+      ),
+      imageLoaded: [...p.renderer.images.values()].every((x: any) => x.loaded),
+      types: p.renderer.score.scenes.slice(-2).map((c: any) => c.type),
+    };
+  });
+  expect(result).toEqual({
+    same: true,
+    transparent: true,
+    red: true,
+    imageLoaded: true,
+    types: ['shape', 'image'],
+  });
+  expect(errors).toEqual([]);
+});

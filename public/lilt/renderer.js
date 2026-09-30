@@ -31,6 +31,8 @@
       this.calm = false;
       this.guides = false;
       this.selected = [];
+      this.images = new Map();
+      this.destroyed = false;
       this.load(score);
       this.observer = new ResizeObserver(() => this.resize());
       this.observer.observe(canvas);
@@ -39,6 +41,9 @@
     load(score) {
       E.validate(score);
       this.score = score;
+      for (const [id, entry] of this.images) {
+        if (score.assets?.[id]?.src !== entry.src) this.images.delete(id);
+      }
       this.intensity = score.motion ?? 1;
       this.schedule = E.schedule(score);
       this.timeline = this.schedule.clips;
@@ -69,9 +74,144 @@
       this.invalidate();
       this.draw(this.time);
     }
+    imageAsset(id) {
+      const asset = this.score.assets?.[id];
+      if (!asset) return null;
+      const cached = this.images.get(id);
+      if (cached?.src === asset.src) return cached;
+      const image = new Image(),
+        entry = { src: asset.src, image, loaded: false, error: null };
+      entry.promise = new Promise((resolve, reject) => {
+        image.onload = () => {
+          entry.loaded = true;
+          if (!this.destroyed && this.images.get(id) === entry) {
+            this.invalidate();
+            this.draw(this.time);
+          }
+          resolve();
+        };
+        image.onerror = () => {
+          entry.error = Error(
+            'Could not load image ' + (asset.name || id) + '. Remote images must allow CORS.',
+          );
+          if (!this.destroyed && this.images.get(id) === entry) {
+            this.invalidate();
+            this.draw(this.time);
+            this.options.onError?.(entry.error);
+          }
+          reject(entry.error);
+        };
+      });
+      entry.promise.catch(() => {});
+      this.images.set(id, entry);
+      image.crossOrigin = 'anonymous';
+      image.src = asset.src;
+      return entry;
+    }
+    async ready() {
+      await Promise.all(
+        Object.keys(this.score.assets || {}).map((id) => this.imageAsset(id).promise),
+      );
+    }
+    compileVisual(scene, plan) {
+      const item = scene[scene.type],
+        source = plan.glyphs[0],
+        o = { size: 1, color: item.fill || '#c4a2ff', dx: 0, dy: 0, rotation: 0, ...source.style };
+      const width = item.width * o.size,
+        height = item.height * o.size,
+        ratio = Math.min(1.5, 2048 / Math.max(width, height));
+      const bitmap = surface(width * ratio, height * ratio),
+        c = bitmap.getContext('2d');
+      c.scale(bitmap.width / width, bitmap.height / height);
+      if (scene.type === 'shape') {
+        const stroke = item.stroke || 'none',
+          line = item.strokeWidth ?? 2,
+          pad = stroke === 'none' ? 0 : line / 2,
+          w = Math.max(1, width - pad * 2),
+          h = Math.max(1, height - pad * 2);
+        c.translate(width / 2, height / 2);
+        c.beginPath();
+        if (item.kind === 'rectangle')
+          c.roundRect(-w / 2, -h / 2, w, h, Math.min(item.radius || 0, w / 2, h / 2));
+        else if (item.kind === 'ellipse') c.ellipse(0, 0, w / 2, h / 2, 0, 0, TAU);
+        else if (item.kind === 'line') {
+          c.moveTo(-w / 2, 0);
+          c.lineTo(w / 2, 0);
+        } else {
+          const sides = item.kind === 'triangle' ? 3 : item.sides || 5,
+            star = item.kind === 'star',
+            n = star ? sides * 2 : sides;
+          for (let i = 0; i < n; i++) {
+            const angle = -Math.PI / 2 + (i / n) * TAU,
+              r = star && i % 2 ? (item.innerRadius ?? 0.45) : 1,
+              x = ((Math.cos(angle) * w) / 2) * r,
+              y = ((Math.sin(angle) * h) / 2) * r;
+            i ? c.lineTo(x, y) : c.moveTo(x, y);
+          }
+          c.closePath();
+        }
+        if (item.kind !== 'line' && o.color !== 'none') {
+          c.fillStyle = o.color;
+          c.fill();
+        }
+        if (stroke !== 'none' || item.kind === 'line') {
+          c.lineWidth = line;
+          c.strokeStyle = stroke === 'none' ? o.color : stroke;
+          c.lineJoin = 'round';
+          c.stroke();
+        }
+      } else {
+        const asset = this.imageAsset(item.asset);
+        if (asset?.loaded) {
+          const image = asset.image,
+            fit = item.fit || 'contain';
+          if (fit === 'stretch') c.drawImage(image, 0, 0, width, height);
+          else {
+            const scale = (fit === 'cover' ? Math.max : Math.min)(
+                width / image.naturalWidth,
+                height / image.naturalHeight,
+              ),
+              w = image.naturalWidth * scale,
+              h = image.naturalHeight * scale;
+            c.drawImage(image, (width - w) / 2, (height - h) / 2, w, h);
+          }
+        } else {
+          c.strokeStyle = asset?.error ? '#d1778c' : '#c4a2ff';
+          c.lineWidth = 2;
+          c.strokeRect(1, 1, width - 2, height - 2);
+          c.beginPath();
+          c.moveTo(0, 0);
+          c.lineTo(width, height);
+          c.moveTo(width, 0);
+          c.lineTo(0, height);
+          c.stroke();
+        }
+      }
+      const work = surface(bitmap.width, bitmap.height),
+        g = {
+          ...source,
+          o,
+          i: 0,
+          n: 1,
+          fs: height / 1.3,
+          advance: width,
+          x: o.dx,
+          y: o.dy,
+          angle: (o.rotation * Math.PI) / 180,
+          r: source.random,
+          bitmap,
+          work,
+          tex: work.getContext('2d'),
+          b: Math.max(width, height),
+          drawWidth: width,
+          drawHeight: height,
+        };
+      return { glyphs: [g], fit: 1, scene: scene.index, layout: 'visual', plan };
+    }
     compile(scene, viewW = this.w, viewH = this.h) {
       const plan = E.compileScene(this.score, scene),
         n = plan.glyphs.length;
+      if (scene.type === 'shape' || scene.type === 'image') return this.compileVisual(scene, plan);
       const glyphs = plan.glyphs.map((g, i) => {
         const o = {
           face: 'mincho',
@@ -392,10 +532,11 @@
               this.calm ? Math.min(2400, scene.duration / 2) : age,
               plan,
             ),
-            B = g.b;
+            BW = g.drawWidth ?? g.b,
+            BH = g.drawHeight ?? g.b;
           if (state.reveal < 1) {
             ctx.beginPath();
-            ctx.rect(-B / 2, -B / 2, B * C(state.reveal), B);
+            ctx.rect(-BW / 2, -BH / 2, BW * C(state.reveal), BH);
             ctx.clip();
           }
           if (warp) {
@@ -409,13 +550,13 @@
                 y,
                 bitmap.width,
                 rh,
-                -B / 2 + dx,
-                -B / 2 + (y / bitmap.height) * B,
-                B,
-                (rh / bitmap.height) * B + 0.2,
+                -BW / 2 + dx,
+                -BH / 2 + (y / bitmap.height) * BH,
+                BW,
+                (rh / bitmap.height) * BH + 0.2,
               );
             }
-          } else ctx.drawImage(bitmap, -B / 2, -B / 2, B, B);
+          } else ctx.drawImage(bitmap, -BW / 2, -BH / 2, BW, BH);
           ctx.filter = 'none';
           if (this.guides || (scene.index === this.active && this.selected.includes(g.i))) {
             ctx.strokeStyle =
@@ -462,6 +603,8 @@
       return null;
     }
     destroy() {
+      this.destroyed = true;
+      this.images.clear();
       this.observer.disconnect();
       this.invalidate();
     }

@@ -1,6 +1,9 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
+import BezierEditor from './BezierEditor';
+import MotionPathEditor from './MotionPathEditor';
+import { embedImage } from '../lib/images';
 import {
   loadEngine,
   normalize,
@@ -69,6 +72,7 @@ function NumberField({
       <div className="number-wrap">
         <input
           type="number"
+          aria-label={label}
           value={Number(value.toFixed(3))}
           min={min}
           max={max}
@@ -173,6 +177,7 @@ export default function Studio() {
     broadcastRef = useRef(false),
     importInput = useRef<HTMLInputElement>(null),
     audioInput = useRef<HTMLInputElement>(null),
+    imageInput = useRef<HTMLInputElement>(null),
     timelineScroll = useRef<HTMLDivElement>(null),
     lastPublished = useRef(0);
   useEffect(() => {
@@ -311,7 +316,10 @@ export default function Studio() {
   }, [pause]);
   useEffect(() => {
     if (!engine || !score || !canvas.current) return;
-    if (!renderer.current) renderer.current = new engine.Renderer(canvas.current, score);
+    if (!renderer.current)
+      renderer.current = new engine.Renderer(canvas.current, score, {
+        onError: (error: Error) => setStatus(error.message),
+      });
     else renderer.current.load(score);
     renderer.current.resize();
     renderer.current.focus = Math.max(
@@ -467,6 +475,27 @@ export default function Studio() {
       editClip((c, s) => {
         const dup = clone(c);
         dup.id = id;
+        if (c.type === 'shape' || c.type === 'image') {
+          for (const rule of [
+            ...(dup.styles || []),
+            ...(dup.animations || []),
+            ...(dup.materials || []),
+          ]) {
+            if (rule.select?.ids)
+              rule.select.ids = rule.select.ids.map((x) =>
+                x === c.id ? id : x === c.id + '-object' ? id + '-object' : x,
+              );
+          }
+        }
+        for (const fx of [...(dup.animations || []), ...(dup.materials || [])]) {
+          fx.id = uid('fx');
+          if (s.effects?.[fx.use]) {
+            const original = fx.use,
+              use = uid(original.startsWith('studio-') ? 'studio' : 'path');
+            s.effects[use] = clone(s.effects[original]);
+            fx.use = use;
+          }
+        }
         dup.name = (c.name || 'Clip') + ' copy';
         dup.start = (c.start || 0) + c.duration;
         s.scenes.push(dup);
@@ -517,6 +546,91 @@ export default function Studio() {
       setSelected([]);
       setInspectorTab('clip');
     }
+  };
+  const addVisual = (type: 'shape' | 'image', asset?: Awaited<ReturnType<typeof embedImage>>) => {
+    if (!score) return;
+    const id = uid('clip'),
+      layer = uid('layer'),
+      assetId = uid('asset');
+    const start = Math.round(timeRef.current);
+    if (
+      commit(
+        (s) => {
+          s.layers!.push({
+            id: layer,
+            name: asset?.name || 'Shape',
+            z: Math.max(...s.layers!.map((l) => l.z || 0)) + 1,
+            rect: [0, 0, 1, 1],
+            opacity: 1,
+            visible: true,
+          });
+          const c: Clip = {
+            id,
+            type,
+            name: asset?.name || 'Rectangle',
+            start,
+            duration: 6000,
+            layer,
+            layout: 'line',
+            content: [],
+            style: { size: 1, dx: 0, dy: 0, rotation: 0 },
+            animations: [],
+            materials: [],
+          };
+          if (type === 'shape')
+            c.shape = {
+              kind: 'rectangle',
+              width: 240,
+              height: 140,
+              fill: '#c4a2ff',
+              stroke: 'none',
+              strokeWidth: 2,
+              radius: 12,
+            };
+          else if (asset) {
+            s.assets ??= {};
+            s.assets[assetId] = { type: 'image', src: asset.src, name: asset.name };
+            const scale = Math.min(1, 420 / Math.max(asset.width, asset.height));
+            c.image = {
+              asset: assetId,
+              width: Math.round(asset.width * scale),
+              height: Math.round(asset.height * scale),
+              fit: 'contain',
+            };
+          }
+          s.scenes.push(c);
+          ensureEnd(s);
+        },
+        `${type === 'shape' ? 'Shape' : 'Image'} clip added`,
+      )
+    ) {
+      pause();
+      setCurrent(id);
+      setSelected([]);
+      setInspectorTab('clip');
+      seek(start);
+    }
+  };
+  const addPath = () => {
+    const use = uid('path');
+    editClip((c, s) => {
+      s.effects ??= {};
+      s.effects[use] = {
+        kind: 'motion',
+        ease: [0.42, 0, 0.58, 1],
+        path: {
+          points: [
+            [-240, 120],
+            [-140, -220],
+            [160, 220],
+            [240, -120],
+          ],
+          orient: false,
+        },
+      };
+      c.animations ??= [];
+      c.animations.push({ id: uid('fx'), use, each: 'phrase', at: 0, duration: c.duration });
+    }, 'Bézier motion path added');
   };
   const addLayer = () => {
     if (!score) return;
@@ -704,7 +818,7 @@ export default function Studio() {
       const packed = custom
         ? `Lilt3.registerPack({id:'user',version:'1.0.0',effects:{${custom}}});`
         : '';
-      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lilt player</title><style>${fonts}\nhtml,body{margin:0;height:100%;overflow:hidden;background:transparent}canvas{width:100%;height:100%;display:block}</style></head><body><canvas id="stage" aria-label="Animated lyrics"></canvas><script>${safe(sources.join('\n'))}\n${safe(packed)}\nconst score=${JSON.stringify(scoreRef.current).replace(/</g, '\\u003c')};const q=new URLSearchParams(location.search);const player=window.liltPlayer=new Lilt3.Player(document.getElementById('stage'),score,{transparent:q.get('transparent')!=='0',loop:q.get('loop')!=='0',channel:'lilt-studio'});document.fonts.ready.then(()=>{player.renderer.invalidate();player.seek(Number(q.get('time')||0));if(q.get('socket'))player.connectSocket(q.get('socket'));if(q.get('autoplay')!=='0')player.play();});<\/script></body></html>`;
+      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lilt player</title><style>${fonts}\nhtml,body{margin:0;height:100%;overflow:hidden;background:transparent}canvas{width:100%;height:100%;display:block}</style></head><body><canvas id="stage" aria-label="Animated lyrics"></canvas><script>${safe(sources.join('\n'))}\n${safe(packed)}\nconst score=${JSON.stringify(scoreRef.current).replace(/</g, '\\u003c')};const q=new URLSearchParams(location.search);const player=window.liltPlayer=new Lilt3.Player(document.getElementById('stage'),score,{transparent:q.get('transparent')!=='0',loop:q.get('loop')!=='0',channel:'lilt-studio'});Promise.all([document.fonts.ready,player.renderer.ready()]).then(()=>{player.renderer.invalidate();player.seek(Number(q.get('time')||0));if(q.get('socket'))player.connectSocket(q.get('socket'));if(q.get('autoplay')!=='0')player.play();});<\/script></body></html>`;
       download(html, 'lilt-player.html', 'text/html');
       setStatus(
         'Standalone player exported · fonts, score, renderer, and registered packs included.',
@@ -713,9 +827,15 @@ export default function Studio() {
       setStatus((error as Error).message);
     }
   };
-  const snapshot = () => {
+  const snapshot = async () => {
     const r = renderer.current;
     if (!r) return;
+    try {
+      await r.ready();
+    } catch (error) {
+      setStatus((error as Error).message);
+      return;
+    }
     const sel = r.selected,
       guide = r.guides;
     r.selected = [];
@@ -1032,6 +1152,9 @@ export default function Studio() {
     duration = timeline.duration,
     layers = timeline.layers;
   const focusLayer = score.layers!.find((l) => l.id === clip.layer) || score.layers![0];
+  const visual = clip.type === 'shape' || clip.type === 'image';
+  const pathEffect = clip.animations?.find((f) => engine.definition(score, f.use)?.path);
+  const pathDef = pathEffect ? engine.definition(score, pathEffect.use) : undefined;
   const glyphs = engine.flatten(clip).glyphs;
   const selectedGlyph = renderer.current?.cache?.glyphs?.find((g) => selected.includes(g.id));
   const style = {
@@ -1222,6 +1345,12 @@ export default function Studio() {
                 <Button icon="plus" onClick={addClip}>
                   Text clip
                 </Button>
+                <Button icon="plus" onClick={() => addVisual('shape')}>
+                  Shape
+                </Button>
+                <Button icon="plus" onClick={() => imageInput.current?.click()}>
+                  Image
+                </Button>
                 <Button icon="music" onClick={() => audioInput.current?.click()}>
                   Audio
                 </Button>
@@ -1234,7 +1363,7 @@ export default function Studio() {
                     onClick={() => selectClip(c.id)}
                   >
                     <span className="clip-mini" style={{ color: palette[i % palette.length] }}>
-                      Aa
+                      {c.type === 'shape' ? '◈' : c.type === 'image' ? '▧' : 'Aa'}
                     </span>
                     <span>
                       <strong>{c.name || 'Untitled clip'}</strong>
@@ -1390,11 +1519,13 @@ export default function Studio() {
               <Icon name="settings" />
               Inspector
             </span>
-            <span className="selection-tag">{selected.length ? 'CHARACTER' : 'TEXT CLIP'}</span>
+            <span className="selection-tag">
+              {visual ? clip.type!.toUpperCase() : selected.length ? 'CHARACTER' : 'TEXT CLIP'}
+            </span>
           </div>
           <div className="selected-summary">
             <span className="selected-icon" style={{ color }}>
-              Aa
+              {clip.type === 'shape' ? '◈' : clip.type === 'image' ? '▧' : 'Aa'}
             </span>
             <div>
               <strong>
@@ -1415,7 +1546,7 @@ export default function Studio() {
           </div>
           <div className="inspector-tabs" role="tablist" aria-label="Inspector">
             {[
-              ['clip', 'Text'],
+              ['clip', visual ? 'Object' : 'Text'],
               ['motion', 'Motion'],
               ['keys', 'Keys'],
               ['stage', 'Stage'],
@@ -1435,7 +1566,7 @@ export default function Studio() {
               <>
                 <section className="inspector-section">
                   <h3>
-                    Content <span>{glyphs.length} characters</span>
+                    Content <span>{visual ? clip.type : `${glyphs.length} characters`}</span>
                   </h3>
                   <Field label="Clip name">
                     <input
@@ -1448,147 +1579,361 @@ export default function Studio() {
                       }
                     />
                   </Field>
-                  <textarea
-                    className="lyric-input"
-                    aria-label="Lyric text"
-                    value={textDraft}
-                    onChange={(e) => setTextDraft(e.target.value)}
-                    onBlur={() => {
-                      if (textDraft !== engine.contentText(clip.content)) {
-                        if (
-                          editClip(
-                            (c) => engine.editText(c, textDraft),
-                            'Text updated · matching character IDs preserved',
-                          )
-                        )
-                          setSelected([]);
-                        else setTextDraft(engine.contentText(clip.content));
-                      }
-                    }}
-                  />
-                  <div className="glyph-selector" aria-label="Select characters">
-                    {glyphs.map((g) => (
-                      <button
-                        key={g.id}
-                        className={selected.includes(g.id) ? 'selected' : ''}
-                        aria-pressed={selected.includes(g.id)}
-                        title={`Select ${g.ch} (${g.id})`}
-                        onClick={(e) =>
-                          setSelected(
-                            e.shiftKey
-                              ? selected.includes(g.id)
-                                ? selected.filter((id) => id !== g.id)
-                                : [...selected, g.id]
-                              : [g.id],
-                          )
-                        }
-                      >
-                        {g.ch}
-                      </button>
-                    ))}
-                  </div>
-                  {selected.length > 0 && (
-                    <Button className="text-button" onClick={() => setSelected([])}>
-                      Apply to whole clip
-                    </Button>
+                  {!visual && (
+                    <>
+                      {' '}
+                      <textarea
+                        className="lyric-input"
+                        aria-label="Lyric text"
+                        value={textDraft}
+                        onChange={(e) => setTextDraft(e.target.value)}
+                        onBlur={() => {
+                          if (textDraft !== engine.contentText(clip.content)) {
+                            if (
+                              editClip(
+                                (c) => engine.editText(c, textDraft),
+                                'Text updated · matching character IDs preserved',
+                              )
+                            )
+                              setSelected([]);
+                            else setTextDraft(engine.contentText(clip.content));
+                          }
+                        }}
+                      />
+                      <div className="glyph-selector" aria-label="Select characters">
+                        {glyphs.map((g) => (
+                          <button
+                            key={g.id}
+                            className={selected.includes(g.id) ? 'selected' : ''}
+                            aria-pressed={selected.includes(g.id)}
+                            title={`Select ${g.ch} (${g.id})`}
+                            onClick={(e) =>
+                              setSelected(
+                                e.shiftKey
+                                  ? selected.includes(g.id)
+                                    ? selected.filter((id) => id !== g.id)
+                                    : [...selected, g.id]
+                                  : [g.id],
+                              )
+                            }
+                          >
+                            {g.ch}
+                          </button>
+                        ))}
+                      </div>
+                      {selected.length > 0 && (
+                        <Button className="text-button" onClick={() => setSelected([])}>
+                          Apply to whole clip
+                        </Button>
+                      )}
+                    </>
                   )}
                 </section>
-                <section className="inspector-section">
-                  <h3>
-                    Typography <Icon name="settings" size={12} />
-                  </h3>
-                  <Field label="Typeface">
-                    <select value={style.face} onChange={(e) => setStyle('face', e.target.value)}>
-                      {Object.keys(engine.faces).map((face) => (
-                        <option key={face} value={face}>
-                          {
-                            (
+                {!visual && (
+                  <>
+                    <section className="inspector-section">
+                      <h3>
+                        Typography <Icon name="settings" size={12} />
+                      </h3>
+                      <Field label="Typeface">
+                        <select
+                          value={style.face}
+                          onChange={(e) => setStyle('face', e.target.value)}
+                        >
+                          {Object.keys(engine.faces).map((face) => (
+                            <option key={face} value={face}>
                               {
-                                mincho: 'Mincho · Serif',
-                                sans: 'Sans · Modern',
-                                bold: 'Mincho · Bold',
-                                black: 'Sans · Black',
-                                brush: 'Brush · Handwritten',
-                                display: 'Display · Heavy',
-                              } as Record<string, string>
-                            )[face]
+                                (
+                                  {
+                                    mincho: 'Mincho · Serif',
+                                    sans: 'Sans · Modern',
+                                    bold: 'Mincho · Bold',
+                                    black: 'Sans · Black',
+                                    brush: 'Brush · Handwritten',
+                                    display: 'Display · Heavy',
+                                  } as Record<string, string>
+                                )[face]
+                              }
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <div className="field-grid">
+                        <NumberField
+                          label="Size"
+                          value={style.size}
+                          min={0.25}
+                          max={4}
+                          step={0.05}
+                          suffix="×"
+                          onChange={(n) => setStyle('size', n)}
+                        />
+                        <Field label="Fill">
+                          <div className="color-field">
+                            <input
+                              aria-label="Text color"
+                              type="color"
+                              value={style.color}
+                              onChange={(e) => setStyle('color', e.target.value)}
+                            />
+                            <span>{style.color.toUpperCase()}</span>
+                          </div>
+                        </Field>
+                      </div>
+                      <div className="field-grid">
+                        <NumberField
+                          label="Offset X"
+                          value={style.dx}
+                          suffix="px"
+                          onChange={(n) => setStyle('dx', n)}
+                        />
+                        <NumberField
+                          label="Offset Y"
+                          value={style.dy}
+                          suffix="px"
+                          onChange={(n) => setStyle('dy', n)}
+                        />
+                      </div>
+                      <NumberField
+                        label="Rotation"
+                        value={style.rotation}
+                        step={1}
+                        suffix="°"
+                        onChange={(n) => setStyle('rotation', n)}
+                      />
+                      <Field label="Arrangement">
+                        <select
+                          value={clip.layout}
+                          onChange={(e) =>
+                            editClip((c) => {
+                              c.layout = e.target.value;
+                            }, 'Layout updated')
                           }
-                        </option>
+                        >
+                          {engine.layouts.map((layout) => (
+                            <option key={layout} value={layout}>
+                              {pretty(layout)}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <label className="checkbox">
+                        <input
+                          type="checkbox"
+                          checked={!!clip.mixFonts}
+                          onChange={(e) =>
+                            editClip((c) => {
+                              c.mixFonts = e.target.checked;
+                            })
+                          }
+                        />
+                        Mix typefaces deterministically
+                      </label>
+                    </section>
+                  </>
+                )}
+                {visual && (
+                  <section className="inspector-section">
+                    <h3>{clip.type === 'shape' ? 'Shape geometry' : 'Image geometry'}</h3>
+                    {clip.shape && (
+                      <>
+                        <Field label="Shape">
+                          <select
+                            aria-label="Shape"
+                            value={clip.shape.kind}
+                            onChange={(e) =>
+                              editClip((c) => {
+                                c.shape!.kind = e.target.value as NonNullable<
+                                  Clip['shape']
+                                >['kind'];
+                              })
+                            }
+                          >
+                            {['rectangle', 'ellipse', 'triangle', 'star', 'polygon', 'line'].map(
+                              (kind) => (
+                                <option key={kind}>{kind}</option>
+                              ),
+                            )}
+                          </select>
+                        </Field>
+                        <div className="field-grid">
+                          <Field label="Fill">
+                            <input
+                              type="color"
+                              value={
+                                clip.shape.fill === 'none'
+                                  ? '#c4a2ff'
+                                  : clip.shape.fill || '#c4a2ff'
+                              }
+                              onChange={(e) =>
+                                editClip((c) => {
+                                  c.shape!.fill = e.target.value;
+                                })
+                              }
+                            />
+                          </Field>
+                          <Field label="Stroke">
+                            <input
+                              type="color"
+                              value={
+                                clip.shape.stroke === 'none'
+                                  ? '#c4a2ff'
+                                  : clip.shape.stroke || '#c4a2ff'
+                              }
+                              onChange={(e) =>
+                                editClip((c) => {
+                                  c.shape!.stroke = e.target.value;
+                                })
+                              }
+                            />
+                          </Field>
+                        </div>
+                        <label className="checkbox">
+                          <input
+                            type="checkbox"
+                            checked={clip.shape.fill === 'none'}
+                            onChange={(e) =>
+                              editClip((c) => {
+                                c.shape!.fill = e.target.checked ? 'none' : '#c4a2ff';
+                              })
+                            }
+                          />
+                          No fill
+                        </label>
+                        <label className="checkbox">
+                          <input
+                            type="checkbox"
+                            checked={clip.shape.stroke !== 'none' && !!clip.shape.stroke}
+                            onChange={(e) =>
+                              editClip((c) => {
+                                c.shape!.stroke = e.target.checked ? '#c4a2ff' : 'none';
+                              })
+                            }
+                          />
+                          Outline
+                        </label>
+                        <NumberField
+                          label="Stroke width"
+                          value={clip.shape.strokeWidth ?? 2}
+                          min={0}
+                          max={500}
+                          onChange={(n) =>
+                            editClip((c) => {
+                              c.shape!.strokeWidth = n;
+                            })
+                          }
+                        />
+                        {clip.shape.kind === 'rectangle' && (
+                          <NumberField
+                            label="Corner radius"
+                            value={clip.shape.radius ?? 0}
+                            min={0}
+                            max={500}
+                            onChange={(n) =>
+                              editClip((c) => {
+                                c.shape!.radius = n;
+                              })
+                            }
+                          />
+                        )}
+                        {['star', 'polygon'].includes(clip.shape.kind) && (
+                          <NumberField
+                            label="Points / sides"
+                            value={clip.shape.sides ?? 5}
+                            min={3}
+                            max={32}
+                            onChange={(n) =>
+                              editClip((c) => {
+                                c.shape!.sides = n;
+                              })
+                            }
+                          />
+                        )}
+                        {clip.shape.kind === 'star' && (
+                          <NumberField
+                            label="Inner radius"
+                            value={clip.shape.innerRadius ?? 0.45}
+                            min={0.05}
+                            max={0.95}
+                            step={0.05}
+                            onChange={(n) =>
+                              editClip((c) => {
+                                c.shape!.innerRadius = n;
+                              })
+                            }
+                          />
+                        )}
+                      </>
+                    )}
+                    {clip.image && (
+                      <>
+                        <Field label="Image fit">
+                          <select
+                            value={clip.image.fit || 'contain'}
+                            onChange={(e) =>
+                              editClip((c) => {
+                                c.image!.fit = e.target.value as 'contain' | 'cover' | 'stretch';
+                              })
+                            }
+                          >
+                            {['contain', 'cover', 'stretch'].map((fit) => (
+                              <option key={fit}>{fit}</option>
+                            ))}
+                          </select>
+                        </Field>
+                        <p className="hint">
+                          Embedded in your project and standalone player. PNG, JPEG and WebP are
+                          supported.
+                        </p>
+                      </>
+                    )}
+                    <div className="field-grid">
+                      {(['width', 'height'] as const).map((key) => (
+                        <NumberField
+                          key={key}
+                          label={pretty(key)}
+                          value={(clip.shape || clip.image)![key]}
+                          min={1}
+                          max={4096}
+                          suffix="px"
+                          onChange={(n) =>
+                            editClip((c) => {
+                              (c.shape || c.image)![key] = n;
+                            })
+                          }
+                        />
                       ))}
-                    </select>
-                  </Field>
-                  <div className="field-grid">
+                    </div>
                     <NumberField
-                      label="Size"
+                      label="Scale"
                       value={style.size}
                       min={0.25}
                       max={4}
                       step={0.05}
-                      suffix="×"
                       onChange={(n) => setStyle('size', n)}
                     />
-                    <Field label="Fill">
-                      <div className="color-field">
-                        <input
-                          aria-label="Text color"
-                          type="color"
-                          value={style.color}
-                          onChange={(e) => setStyle('color', e.target.value)}
-                        />
-                        <span>{style.color.toUpperCase()}</span>
-                      </div>
-                    </Field>
-                  </div>
-                  <div className="field-grid">
+                    <div className="field-grid">
+                      <NumberField
+                        label="Offset X"
+                        value={style.dx}
+                        suffix="px"
+                        onChange={(n) => setStyle('dx', n)}
+                      />
+                      <NumberField
+                        label="Offset Y"
+                        value={style.dy}
+                        suffix="px"
+                        onChange={(n) => setStyle('dy', n)}
+                      />
+                    </div>
                     <NumberField
-                      label="Offset X"
-                      value={style.dx}
-                      suffix="px"
-                      onChange={(n) => setStyle('dx', n)}
+                      label="Rotation"
+                      value={style.rotation}
+                      suffix="°"
+                      onChange={(n) => setStyle('rotation', n)}
                     />
-                    <NumberField
-                      label="Offset Y"
-                      value={style.dy}
-                      suffix="px"
-                      onChange={(n) => setStyle('dy', n)}
-                    />
-                  </div>
-                  <NumberField
-                    label="Rotation"
-                    value={style.rotation}
-                    step={1}
-                    suffix="°"
-                    onChange={(n) => setStyle('rotation', n)}
-                  />
-                  <Field label="Arrangement">
-                    <select
-                      value={clip.layout}
-                      onChange={(e) =>
-                        editClip((c) => {
-                          c.layout = e.target.value;
-                        }, 'Layout updated')
-                      }
-                    >
-                      {engine.layouts.map((layout) => (
-                        <option key={layout} value={layout}>
-                          {pretty(layout)}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={!!clip.mixFonts}
-                      onChange={(e) =>
-                        editClip((c) => {
-                          c.mixFonts = e.target.checked;
-                        })
-                      }
-                    />
-                    Mix typefaces deterministically
-                  </label>
-                </section>
+                  </section>
+                )}
                 <section className="inspector-section">
                   <h3>Timing & layer</h3>
                   <div className="field-grid">
@@ -1662,7 +2007,11 @@ export default function Studio() {
                       >
                         <span className="effect-order">{String(i + 1).padStart(2, '0')}</span>
                         <span>
-                          <strong>{pretty(fx.use)}</strong>
+                          <strong>
+                            {engine.definition(score, fx.use)?.path
+                              ? 'Bézier path'
+                              : pretty(fx.use)}
+                          </strong>
                           <small>
                             {fx.select?.ids ? `${fx.select.ids.length} targets` : 'All characters'}{' '}
                             · {engine.definition(score, fx.use).kind}
@@ -1682,7 +2031,7 @@ export default function Studio() {
                   <>
                     <section className="inspector-section">
                       <h3>
-                        {pretty(activeEffect.use)}
+                        {def?.path ? 'Bézier path' : pretty(activeEffect.use)}
                         <div className="stack-actions">
                           <Button title="Move effect up" onClick={() => reorderEffect(-1)}>
                             ↑
@@ -1837,6 +2186,19 @@ export default function Studio() {
                           </Button>
                         </>
                       )}
+                      {def.phase !== 'loop' && !def.keyframes && (
+                        <BezierEditor
+                          label="Animation easing"
+                          value={activeEffect.ease}
+                          allowDefault
+                          onChange={(ease) =>
+                            changeEffect((f) => {
+                              if (ease === undefined) delete f.ease;
+                              else f.ease = ease;
+                            })
+                          }
+                        />
+                      )}
                       {Object.entries(def.controls || {}).map(([key, control]) => (
                         <Field key={key} label={control.label || pretty(key)}>
                           <div className="slider-control">
@@ -1888,6 +2250,68 @@ export default function Studio() {
             )}
             {inspectorTab === 'keys' && (
               <>
+                <section className="inspector-section">
+                  <h3>Bézier motion path</h3>
+                  {!pathEffect && (
+                    <>
+                      <Button icon="plus" onClick={addPath}>
+                        Add Bézier path
+                      </Button>
+                      <p className="hint">
+                        Move the whole clip along a curved route. Works with text, shapes and
+                        images.
+                      </p>
+                    </>
+                  )}
+                  {pathEffect && pathDef?.path && (
+                    <>
+                      <MotionPathEditor
+                        path={pathDef.path}
+                        onChange={(path) =>
+                          editClip((c, s) => {
+                            s.effects![pathEffect.use].path = path;
+                          }, 'Motion path updated')
+                        }
+                      />
+                      <BezierEditor
+                        label="Path timing"
+                        value={pathEffect.ease ?? pathDef.ease}
+                        onChange={(ease) =>
+                          editClip((c) => {
+                            c.animations!.find((f) => f.use === pathEffect.use)!.ease =
+                              ease || 'linear';
+                          })
+                        }
+                      />
+                      <NumberField
+                        label="Path duration"
+                        value={(pathEffect.duration || clip.duration) / 1000}
+                        min={0.1}
+                        max={60}
+                        step={0.1}
+                        suffix="s"
+                        onChange={(n) =>
+                          editClip((c) => {
+                            c.animations!.find((f) => f.use === pathEffect.use)!.duration =
+                              n * 1000;
+                          })
+                        }
+                      />
+                      <Button
+                        icon="trash"
+                        onClick={() =>
+                          editClip((c) => {
+                            c.animations = c.animations!.filter(
+                              (f) => f !== c.animations!.find((x) => x.use === pathEffect.use),
+                            );
+                          })
+                        }
+                      >
+                        Remove path
+                      </Button>
+                    </>
+                  )}
+                </section>
                 <section className="inspector-section">
                   <h3>
                     Transform keyframes <Icon name="diamond" size={12} />
@@ -2018,7 +2442,7 @@ export default function Studio() {
                         <Icon name="diamond" size={12} />
                         <span>{seconds(f.time)}</span>
                         <strong>{f.value.toFixed(2)}</strong>
-                        <small>{f.ease || 'linear'}</small>
+                        <small>{Array.isArray(f.ease) ? 'Bézier' : f.ease || 'linear'}</small>
                       </button>
                     ))}
                   </div>
@@ -2052,20 +2476,15 @@ export default function Studio() {
                           }
                         />
                       </div>
-                      <Field label="Interpolation to next key">
-                        <select
-                          value={chosenFrame.ease || 'linear'}
-                          onChange={(e) =>
-                            updateFrames((list) => {
-                              list[frameIndex].ease = e.target.value;
-                            })
-                          }
-                        >
-                          {['linear', 'smooth', 'in', 'out', 'back'].map((ease) => (
-                            <option key={ease}>{ease}</option>
-                          ))}
-                        </select>
-                      </Field>
+                      <BezierEditor
+                        label="Interpolation to next key"
+                        value={chosenFrame.ease}
+                        onChange={(ease) =>
+                          updateFrames((list) => {
+                            list[frameIndex].ease = ease || 'linear';
+                          })
+                        }
+                      />
                       <Button
                         icon="trash"
                         onClick={() => {
@@ -2339,6 +2758,12 @@ export default function Studio() {
             <Button icon="plus" onClick={addClip}>
               Text
             </Button>
+            <Button icon="plus" onClick={() => addVisual('shape')}>
+              Shape
+            </Button>
+            <Button icon="plus" onClick={() => imageInput.current?.click()}>
+              Image
+            </Button>
             <Button icon="music" onClick={() => audioInput.current?.click()}>
               Audio
             </Button>
@@ -2484,8 +2909,12 @@ export default function Studio() {
                             onPointerDown={(e) => beginClipDrag(e, c.id, 'start')}
                           />
                           <span className="clip-content">
-                            <span>Aa</span>
-                            {engine.contentText(c.content)}
+                            <span>
+                              {c.type === 'shape' ? '◈' : c.type === 'image' ? '▧' : 'Aa'}
+                            </span>
+                            {c.type === 'shape' || c.type === 'image'
+                              ? c.name || pretty(c.type)
+                              : engine.contentText(c.content)}
                           </span>
                           <span className="clip-duration">{seconds(preview.duration)}</span>
                           <span
@@ -2636,12 +3065,30 @@ export default function Studio() {
           try {
             const f = e.target.files?.[0];
             if (!f) return;
-            if (f.size > 500000) throw Error('Score exceeds 500 KB.');
+            if (f.size > 8_000_000) throw Error('Score exceeds 8 MB including images.');
             applyProject(JSON.parse(await f.text()));
           } catch (error) {
             setStatus((error as Error).message);
           }
           e.target.value = '';
+        }}
+      />
+      <input
+        ref={imageInput}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        hidden
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          if (!file) return;
+          try {
+            setStatus('Embedding image…');
+            const asset = await embedImage(file);
+            addVisual('image', asset);
+          } catch (error) {
+            setStatus((error as Error).message);
+          }
         }}
       />
       <input

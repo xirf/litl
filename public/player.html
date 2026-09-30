@@ -9,7 +9,7 @@ try{
   channel:query.get('channel')||'lilt-studio',onError:e=>error.textContent=e.message
  });
  window.liltPlayer=player;
- await document.fonts.ready;player.renderer.invalidate();player.seek(Number(query.get('time')||0));
+ await Promise.all([document.fonts.ready,player.renderer.ready()]);player.renderer.invalidate();player.seek(Number(query.get('time')||0));
  if(query.get('socket'))player.connectSocket(query.get('socket'));
  if(query.get('autoplay')!=='0')await player.play();
  // Optional parent control is same-origin only. OBS can instead use WebSocket.

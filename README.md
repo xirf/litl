@@ -184,15 +184,84 @@ local milliseconds and hold the endpoint values outside their range:
 
 Use `rise` from a clip's `animations` list. Available properties: `x`, `y`,
 `rotation` (radians), `sx`, `sy`, `opacity`, `blur`, `reveal`. Interpolation lives
-on the departing keyframe: `linear`, `smooth`, `in`, `out`, `back`. Keyframe times
+on the departing keyframe: `linear`, `smooth`, `in`, `out`, `back`, or `[x1,y1,x2,y2]` for a CSS-style cubic Bézier curve. Keyframe times
 must be unique and sorted. Composition dimensions keep layout consistent between
 the studio and OBS, regardless of preview size. Frame rate controls editor stepping;
 playback uses requestAnimationFrame and the audio/performance clock.
 
+## Shapes, images and Bézier curves
+
+Use **Shape** or **Image** in the timeline to add a visual clip on its own layer.
+Shapes include rounded rectangles, ellipses, triangles, stars, polygons and lines.
+The Object inspector controls geometry, fill, stroke, size and transform. Image
+imports accept PNG, JPEG and WebP, preserve transparency, and embed raster assets
+in project JSON and standalone HTML. Imports are resized to at most 1536 pixels;
+embedded assets have a 2 MB limit each and projects an 8 MB limit. Large projects
+may exceed your browser's local storage quota; export JSON to keep a copy.
+
+Shapes and images use the same motion effects, materials and keyframes as text.
+In **Motion**, choose **Custom cubic Bézier** under Animation easing; in **Keys**,
+change the departing keyframe's interpolation. Drag handles, edit all four values,
+or start from an ease in/out preset. Timing control X values stay within 0–1;
+Y values may overshoot. Continuous procedural loops keep their own clock.
+
+In **Keys → Add Bézier path**, drag four spatial points and optionally rotate
+along the tangent. Path offsets use stage pixels. The curve controls the route;
+Path timing controls how quickly the object moves along it. All controls are
+keyboard accessible. The framework-free runtime supports the same score format:
+
+```js
+const score = {
+  v: 3,
+  seed: 1,
+  packs: { core: '3.0.0' },
+  stage: { width: 1280, height: 720, fps: 30 },
+  background: { transparent: true },
+  effects: {
+    route: {
+      kind: 'motion',
+      ease: [0.42, 0, 0.58, 1],
+      path: {
+        points: [
+          [-240, 120],
+          [-140, -220],
+          [160, 220],
+          [240, -120],
+        ],
+        orient: true,
+      },
+    },
+  },
+  scenes: [
+    {
+      id: 'badge',
+      type: 'shape',
+      duration: 6000,
+      shape: { kind: 'star', width: 160, height: 160, fill: '#c4a2ff' },
+      animations: [{ id: 'move', use: 'route', each: 'phrase', at: 0, duration: 6000 }],
+    },
+  ],
+};
+const player = new Lilt3.Player(canvas, score, { transparent: true, loop: true });
+await player.renderer.ready(); // wait for embedded/remote image assets
+player.play();
+```
+
+Image clips use `type: 'image'` and `image: {asset: 'logo', width: 240,
+height: 140, fit: 'contain'}`; declare `assets.logo = {type: 'image', src:
+'data:image/png;base64,…'}` on the score. Remote HTTPS images must allow CORS.
+`Lilt3.easeValue(curve, progress)` and `Lilt3.pathPoint(path, progress)` are also
+available directly and through the ES module entry.
+
+Connected-script shaping means choosing contextual letter forms, joins and
+ligatures for scripts such as Arabic and Indic writing. Lilt currently rasterizes
+graphemes independently, so it cannot preserve all word-level shaping. For now,
+import shaped lettering as a transparent image to animate the intact word.
+
 ## Scope and attribution
 
 This is a focused lyric/motion editor, not a full After Effects implementation.
-It does not yet include video import/export, bezier spatial paths, audio export,
+It does not yet include video import/export, audio export,
 connected-script shaping, WebGL shaders, cloud project storage, or collaboration.
 Font subsets cover the supplied Japanese lyrics; additional characters can use
 system fallback. The supplied 13 movements have illustrative timing, not timing

@@ -34,7 +34,7 @@
     "start": "vite preview",
     "deploy": "vinext-cloudflare deploy",
     "typecheck": "tsc --noEmit",
-    "test": "node tests/model.cjs && node tests/timeline.cjs && node tests/extensions.cjs && node tests/relay.cjs",
+    "test": "node tests/model.cjs && node tests/timeline.cjs && node tests/extensions.cjs && node tests/visuals.cjs && node tests/relay.cjs",
     "test:browser": "playwright test",
     "relay": "node scripts/relay.mjs",
     "format": "prettier --write app components lib scripts tests public/lilt/{model,core-pack,renderer,player,migrate,editing,index}.js *.ts",
