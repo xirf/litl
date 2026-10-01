@@ -1,0 +1,11 @@
+{
+  "source": "Supplied 27.791667-second cover excerpt; times relative to this cut.",
+  "method": "librosa HPSS percussion separation, onset strength, and beat tracking; these are musical beats, not forced vocal alignment.",
+  "bpm": 129.2,
+  "beatMs": [
+    964, 1416, 1904, 2380, 2844, 3309, 3750, 4249, 4725, 5143, 5654, 6084, 6513, 7024, 7454, 7906,
+    8382, 8847, 9300, 9787, 10228, 10704, 11134, 11633, 12074, 12539, 12968, 13444, 13932, 14385,
+    14838, 15325, 15778, 16242, 16707, 17171, 17612, 18088, 18553, 19017, 19470, 19934, 20410,
+    20863, 21328, 21780, 22256, 22709, 23174, 23626, 24102, 24567
+  ]
+}

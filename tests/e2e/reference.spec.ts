@@ -44,5 +44,18 @@ test('reference lyrics load, preserve italic styles, and render in the vanilla O
   expect(await opaquePixels()).toBe(0);
   await page.evaluate(() => (window as any).liltPlayer.seek(18000));
   expect(await opaquePixels()).toBeGreaterThan(100);
+  const heldMotion = await page.evaluate(() => {
+    const player = (window as any).liltPlayer;
+    const sample = (time: number) => {
+      player.seek(time);
+      return [...player.renderer.lastStates[0].matrix];
+    };
+    const first = sample(21000);
+    const next = sample(21125);
+    sample(3000);
+    return { first, next, repeated: sample(21000) };
+  });
+  expect(heldMotion.next).not.toEqual(heldMotion.first);
+  expect(heldMotion.repeated).toEqual(heldMotion.first);
   expect(errors).toEqual([]);
 });

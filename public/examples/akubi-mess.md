@@ -12,12 +12,24 @@ Attach the reference audio separately to hear the timing in Studio.
 
 The overlay includes:
 
-- Pink/white diagonal “I'm a mess” titles with staggered entrances.
+- Pink/white diagonal “I'm a mess” titles with word-by-word entrances.
 - 明けない夜に, 失いかけた声を上げて, 振り返れない, and 僕の心は.
 - Bold italic title repeats with grain and scan materials.
 - Brackets around 僕の心は and a faint oversized echo.
 - The final diagonal refrain, pull-back, and blur/fade transition.
 - Blank intervals during the instrumental transition and end credits.
+
+Motion uses the measured musical beats in `scripts/reference-beats.json` (about
+129 BPM): brief scale accents on the beats, continuous drift through held lyrics,
+short authored entrances/exits, and a connected refrain pull-back. Japanese
+characters reveal at individually authored cue offsets. These cues approximate
+the vocal phrasing; they are not automatic phoneme alignment. Audio analysis runs
+offline, so the JSON and OBS player need no microphone or audio-analysis library.
+
+To reproduce the beat analysis, install Python's `librosa`, extract a mono WAV
+from the reference cut with FFmpeg, then run
+`python scripts/analyze-reference-audio.py reference.wav scripts/reference-beats.json`.
+Regenerate the project with `node scripts/reference-lyrics.mjs` afterward.
 
 The source illustration, camera cuts, particle effects, ornamental framing, and
 audio are not included. The existing serif font and grain/scan effects approximate

@@ -1,11 +1,14 @@
 // Rebuild the editable lyric overlay for the user-supplied 27.79s cover excerpt.
 // All times are relative to the uploaded cut, quantized to its 24fps frames.
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import '../public/lilt/model.js';
 import '../public/lilt/core-pack.js';
 
 const E = globalThis.Lilt3;
 const frame = (n) => Math.round((n * 1000) / 24);
+const audio = JSON.parse(
+  await readFile(new URL('./reference-beats.json', import.meta.url), 'utf8'),
+);
 const score = {
   v: 3,
   seed: 421,
@@ -58,8 +61,6 @@ function text(
     angle = 0,
     layer = 'lyrics',
     color = '#ffffff',
-    enter = 'type',
-    stagger = 0,
     pink = false,
     rough = false,
   } = {},
@@ -80,14 +81,6 @@ function text(
     animations: [],
     materials: [],
   };
-  if (enter)
-    clip.animations.push({
-      id: `${id}-enter`,
-      use: `core/enter-${enter}`,
-      each: stagger ? 'character' : 'phrase',
-      duration: 125,
-      stagger,
-    });
   if (rough)
     clip.materials.push(
       { id: `${id}-grain`, use: 'core/grain', params: { amount: 0.75 } },
@@ -128,7 +121,6 @@ text('pink-upper', "I'm a mess", 29, 81, {
   size: 0.92,
   italic: true,
   angle: -15,
-  stagger: 24,
   pink: true,
 });
 text('pink-lower', "I'm a mess", 57, 81, {
@@ -137,7 +129,6 @@ text('pink-lower', "I'm a mess", 57, 81, {
   size: 1.03,
   italic: true,
   angle: -15,
-  stagger: 24,
   pink: true,
 });
 // Short vertical pink flashes from the opening title treatment.
@@ -145,7 +136,7 @@ shape('pink-flash-one', 48, 50, 0, 418, 3, 30, '#e85385');
 shape('pink-flash-two', 70, 72, -373, 144, 4, 38, '#e85385');
 
 marker(81, '明けない夜に', '#ffffff');
-text('akenai', '明けない夜に', 81, 124, { size: 1.5, stagger: 18 });
+text('akenai', '明けない夜に', 81, 124, { size: 1.5 });
 text('akenai-label', 'A K E N A I   Y O R U N I', 71, 79, {
   size: 0.25,
   scale: 0.5,
@@ -154,7 +145,7 @@ text('akenai-label', 'A K E N A I   Y O R U N I', 71, 79, {
 });
 
 marker(124, '失いかけた声を上げて', '#ffffff');
-text('voice', '失いかけた声を上げて', 124, 207, { x: 247, y: 240, size: 0.25, stagger: 27 });
+text('voice', '失いかけた声を上げて', 124, 207, { x: 247, y: 240, size: 0.25 });
 
 marker(207, 'I’m a mess · hard cuts');
 text('hard-upper-a', "I'm a", 207, 255, {
@@ -164,7 +155,6 @@ text('hard-upper-a', "I'm a", 207, 255, {
   face: 'bold',
   italic: true,
   rough: true,
-  enter: 'glitch',
 });
 text('hard-upper-mess', 'mess.', 217, 255, {
   x: -92,
@@ -173,7 +163,6 @@ text('hard-upper-mess', 'mess.', 217, 255, {
   face: 'bold',
   italic: true,
   rough: true,
-  enter: 'glitch',
 });
 text('hard-lower-a', "I'm a", 233, 255, {
   x: 198,
@@ -182,7 +171,6 @@ text('hard-lower-a', "I'm a", 233, 255, {
   face: 'bold',
   italic: true,
   rough: true,
-  enter: 'glitch',
 });
 text('hard-lower-mess', 'mess.', 241, 255, {
   x: 278,
@@ -191,11 +179,10 @@ text('hard-lower-mess', 'mess.', 241, 255, {
   face: 'bold',
   italic: true,
   rough: true,
-  enter: 'glitch',
 });
 
 marker(255, '振り返れない', '#ffffff');
-text('furikaerenai', '振り返れない', 255, 293, { x: -237, y: 240, size: 0.48, stagger: 20 });
+text('furikaerenai', '振り返れない', 255, 293, { x: -237, y: 240, size: 0.48 });
 text('furikaerenai-top', 'F U R I K A E R E N A I', 255, 293, {
   x: -237,
   y: 211,
@@ -212,13 +199,12 @@ text('furikaerenai-bottom', 'F U R I K A E R E N A I', 255, 293, {
 });
 
 marker(293, '僕の心は', '#ffffff');
-text('heart', '僕の心は', 293, 345, { size: 0.65, enter: 'focus' });
+text('heart', '僕の心は', 293, 345, { size: 0.65 });
 text('heart-echo', '僕の心は', 293, 345, {
   y: 30,
   size: 1.55,
   layer: 'echo',
   color: '#242424',
-  enter: null,
 });
 for (const [side, x] of [
   ['left', -208],
@@ -231,23 +217,14 @@ for (const [side, x] of [
 marker(345, 'Instrumental / transition', '#a3a3a3');
 
 marker(416, 'I’m a mess · refrain');
-const refrain = text('refrain-large', "I'm a mess", 416, 464, {
+text('refrain-large', "I'm a mess", 416, 464, {
   y: 245,
   size: 1.65,
   face: 'bold',
   italic: true,
   angle: -12,
   rough: true,
-  enter: 'glitch',
-  stagger: 20,
 });
-const def = score.effects[`${refrain.id}-pose`];
-def.keyframes.sx = def.keyframes.sy = [
-  { time: 0, value: 1.08, ease: 'out' },
-  { time: 250, value: 1 },
-  { time: refrain.duration - 167, value: 1 },
-  { time: refrain.duration, value: 0.95 },
-];
 text('refrain-credit', 'M Y   F I R S T   S T O R Y', 416, 464, {
   y: 310,
   size: 0.25,
@@ -263,26 +240,199 @@ text('refrain-small', "I'm a mess", 464, 597, {
   italic: true,
   angle: -12,
   rough: true,
-  enter: null,
 });
-const small = score.effects['refrain-small-pose'];
-small.keyframes.sx = small.keyframes.sy = [
-  { time: 0, value: 1.08, ease: 'smooth' },
-  { time: 800, value: 1 },
-  { time: 5200, value: 1 },
-  { time: 5542, value: 1.06 },
-];
-small.keyframes.opacity = [
-  { time: 0, value: 1 },
-  { time: 5292, value: 1 },
-  { time: 5542, value: 0 },
-];
-small.keyframes.blur = [
-  { time: 0, value: 0 },
-  { time: 5292, value: 0 },
-  { time: 5542, value: 12 },
-];
 marker(597, 'Credits / lyric silence', '#a3a3a3');
+
+// Musical beats were measured from the attached audio, not inferred from a uniform BPM grid.
+// Vocal reveals are editorial timings checked against the reference cut; no speech model runs.
+const snap = (ms) => frame(Math.round((ms * 24) / 1000));
+const out = [0.16, 1, 0.3, 1];
+const smooth = [0.4, 0, 0.2, 1];
+const frames = (points) =>
+  [
+    ...new Map(
+      points.map(([time, value, ease = smooth]) => [
+        Math.round(time),
+        { time: Math.round(time), value, ease },
+      ]),
+    ).values(),
+  ].sort((a, b) => a.time - b.time);
+function motion(clip, suffix, keyframes, { at = 0, duration = clip.duration, ids } = {}) {
+  const id = `${clip.id}-${suffix}`;
+  score.effects[id] = { kind: 'motion', keyframes };
+  clip.animations.push({
+    id,
+    use: id,
+    each: 'phrase',
+    at,
+    duration,
+    ...(ids ? { select: { ids } } : {}),
+  });
+}
+const vocalOffsets = {
+  akenai: [0, 125, 250, 375, 625, 875],
+  voice: [0, 125, 292, 458, 625, 917, 1167, 1458, 1667, 1917, 2208],
+  furikaerenai: [0, 125, 292, 417, 667, 875],
+  heart: [0, 167, 333, 583, 875],
+};
+for (const clip of score.scenes) {
+  const pose = score.effects[`${clip.id}-pose`];
+  const isShape = clip.type === 'shape';
+  const label = clip.layer === 'labels';
+  const echo = clip.layer === 'echo';
+  const rough = clip.materials.length > 0;
+  const d = clip.duration;
+  if (isShape && !clip.id.startsWith('bracket')) continue;
+  const unit = isShape ? 1 : 1.25;
+  const x = pose.keyframes.x[0].value;
+  const y = pose.keyframes.y[0].value;
+  const rotation = pose.keyframes.rotation[0].value;
+  const scale = pose.keyframes.sx[0].value;
+  const drift = isShape ? 0 : label ? 2 : echo ? 14 : rough ? 6 : 9;
+  // A continuous camera-like drift connects the accents instead of parking after entry.
+  pose.keyframes.x = frames([
+    [0, x - drift / unit],
+    [d * 0.55, x + drift / unit],
+    [d, x + (drift * 0.3) / unit],
+  ]);
+  pose.keyframes.y = frames([
+    [0, y + (drift * 0.45) / unit],
+    [d * 0.6, y - (drift * 0.35) / unit],
+    [d, y - (drift * 0.7) / unit],
+  ]);
+  pose.keyframes.rotation = frames([
+    [0, rotation - (rough ? 0.015 : 0.003)],
+    [d, rotation + (rough ? 0.012 : 0.003)],
+  ]);
+  pose.keyframes.sx = pose.keyframes.sy = frames([
+    [0, scale],
+    [d, scale * (echo ? 1.12 : label ? 1.015 : 1.035)],
+  ]);
+  const strength = isShape ? 0.012 : label ? 0.009 : echo ? 0.018 : rough ? 0.045 : 0.025;
+  const pulse = [
+    [0, 1],
+    [d, 1],
+  ];
+  audio.beatMs.forEach((time, index) => {
+    const local = snap(time - clip.start);
+    if (local < 167 || local > d - 292) return;
+    pulse.push(
+      [local - 83, 1, out],
+      [local, 1 + strength * (index % 4 === 0 ? 1.2 : 1), smooth],
+      [local + 250, 1],
+    );
+  });
+  const envelope = frames(pulse);
+  if (envelope.length > 2) motion(clip, 'audio-pulse', { sx: envelope, sy: envelope });
+  if (isShape) {
+    const openingX = x + (x < 0 ? 48 : -48);
+    pose.keyframes.x = frames([
+      [0, openingX, out],
+      [250, x],
+      [d - 167, x],
+      [d, x + (x < 0 ? 12 : -12)],
+    ]);
+    motion(clip, 'bracket-reveal', {
+      opacity: frames([
+        [0, 0, 'linear'],
+        [125, 1],
+        [d - 167, 1],
+        [d, 0, 'linear'],
+      ]),
+    });
+    continue;
+  }
+  const glyphs = clip.content;
+  let groups;
+  if (vocalOffsets[clip.id]) {
+    groups = glyphs.map((g, i) => ({ ids: [g.id], at: vocalOffsets[clip.id][i] ?? i * 125 }));
+  } else if (clip.id.startsWith('pink') || clip.id.startsWith('refrain')) {
+    const offsets = clip.id.startsWith('pink') ? [0, 125, 250] : [0, 125, 292];
+    if (label) groups = [{ ids: glyphs.map((g) => g.id), at: 125 }];
+    else
+      groups = [
+        [0, 3],
+        [4, 5],
+        [6, 10],
+      ].map(([a, b], i) => ({ ids: glyphs.slice(a, b).map((g) => g.id), at: offsets[i] }));
+  } else groups = [{ ids: glyphs.map((g) => g.id), at: 0 }];
+  const arrival = rough ? 167 : 208;
+  // The pull-back is one connected refrain, so its second clip starts fully visible.
+  if (clip.id !== 'refrain-small')
+    groups.forEach((group, i) => {
+      motion(
+        clip,
+        `arrival-${i}`,
+        {
+          x: frames([
+            [0, rough ? -24 : label ? 0 : -8, out],
+            [arrival, 0],
+          ]),
+          y: frames([
+            [0, label ? 3 : rough ? 0 : 10, out],
+            [arrival, 0],
+          ]),
+          opacity: frames([
+            [0, 0, 'linear'],
+            [Math.min(arrival, 125), 1],
+          ]),
+          blur: frames([
+            [0, rough ? 3 : 1.5, out],
+            [arrival, 0],
+          ]),
+          sx: frames([
+            [0, rough ? 1.08 : 0.97, out],
+            [arrival, 1],
+          ]),
+          sy: frames([
+            [0, rough ? 1.08 : 0.97, out],
+            [arrival, 1],
+          ]),
+        },
+        { at: snap(group.at), duration: arrival, ids: group.ids },
+      );
+    });
+  const departure = clip.id === 'refrain-small' ? 333 : rough ? 125 : 167;
+  const finish = d - departure;
+  // Keep the large-to-small refrain cut connected; other sections leave just before the cut.
+  if (clip.id !== 'refrain-large')
+    motion(
+      clip,
+      'departure',
+      {
+        opacity: frames([
+          [0, 1, 'linear'],
+          [departure, 0],
+        ]),
+        x: frames([
+          [0, 0, smooth],
+          [departure, rough ? 12 : -8],
+        ]),
+        y: frames([
+          [0, 0, smooth],
+          [departure, -5],
+        ]),
+        blur: frames([
+          [0, 0, smooth],
+          [departure, clip.id === 'refrain-small' ? 8 : 2],
+        ]),
+      },
+      { at: finish, duration: departure },
+    );
+  if (clip.id === 'refrain-large')
+    pose.keyframes.sx = pose.keyframes.sy = frames([
+      [0, 0.94, out],
+      [250, 1],
+      [d - 208, 1.015],
+      [d, 0.86],
+    ]);
+  if (clip.id === 'refrain-small')
+    pose.keyframes.sx = pose.keyframes.sy = frames([
+      [0, 1.65, out],
+      [333, 1.04],
+      [d, 0.98],
+    ]);
+}
 
 E.validate(score);
 await writeFile(
