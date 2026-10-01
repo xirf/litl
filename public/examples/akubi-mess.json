@@ -1,0 +1,2699 @@
+{
+  "v": 3,
+  "seed": 421,
+  "name": "I’m a mess · あくび / でもんすぺーど · Reference excerpt",
+  "packs": {
+    "core": "3.0.0"
+  },
+  "stage": {
+    "width": 854,
+    "height": 480,
+    "fps": 24
+  },
+  "duration": 27792,
+  "background": {
+    "transparent": true
+  },
+  "layers": [
+    {
+      "id": "lyrics",
+      "name": "Lyrics",
+      "z": 1,
+      "rect": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "echo",
+      "name": "Lyric echoes",
+      "z": 0,
+      "rect": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "labels",
+      "name": "Romanized labels",
+      "z": 2,
+      "rect": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "accents",
+      "name": "Brackets and pink accents",
+      "z": 3,
+      "rect": [
+        0,
+        0,
+        1,
+        1
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "pink-upper",
+      "name": "I'm a mess",
+      "start": 1208,
+      "duration": 2167,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.92,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "pink-upper-g0",
+          "text": "I"
+        },
+        {
+          "id": "pink-upper-g1",
+          "text": "'",
+          "style": {
+            "color": "#e85385"
+          }
+        },
+        {
+          "id": "pink-upper-g2",
+          "text": "m"
+        },
+        {
+          "id": "pink-upper-g3",
+          "text": " "
+        },
+        {
+          "id": "pink-upper-g4",
+          "text": "a",
+          "style": {
+            "color": "#e85385"
+          }
+        },
+        {
+          "id": "pink-upper-g5",
+          "text": " "
+        },
+        {
+          "id": "pink-upper-g6",
+          "text": "m"
+        },
+        {
+          "id": "pink-upper-g7",
+          "text": "e",
+          "style": {
+            "color": "#e85385"
+          }
+        },
+        {
+          "id": "pink-upper-g8",
+          "text": "s"
+        },
+        {
+          "id": "pink-upper-g9",
+          "text": "s"
+        }
+      ],
+      "animations": [
+        {
+          "id": "pink-upper-enter",
+          "use": "core/enter-type",
+          "each": "character",
+          "duration": 125,
+          "stagger": 24
+        },
+        {
+          "id": "pink-upper-pose",
+          "use": "pink-upper-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "pink-lower",
+      "name": "I'm a mess",
+      "start": 2375,
+      "duration": 1000,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 1.03,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "pink-lower-g0",
+          "text": "I"
+        },
+        {
+          "id": "pink-lower-g1",
+          "text": "'",
+          "style": {
+            "color": "#e85385"
+          }
+        },
+        {
+          "id": "pink-lower-g2",
+          "text": "m"
+        },
+        {
+          "id": "pink-lower-g3",
+          "text": " "
+        },
+        {
+          "id": "pink-lower-g4",
+          "text": "a",
+          "style": {
+            "color": "#e85385"
+          }
+        },
+        {
+          "id": "pink-lower-g5",
+          "text": " "
+        },
+        {
+          "id": "pink-lower-g6",
+          "text": "m"
+        },
+        {
+          "id": "pink-lower-g7",
+          "text": "e",
+          "style": {
+            "color": "#e85385"
+          }
+        },
+        {
+          "id": "pink-lower-g8",
+          "text": "s"
+        },
+        {
+          "id": "pink-lower-g9",
+          "text": "s"
+        }
+      ],
+      "animations": [
+        {
+          "id": "pink-lower-enter",
+          "use": "core/enter-type",
+          "each": "character",
+          "duration": 125,
+          "stagger": 24
+        },
+        {
+          "id": "pink-lower-pose",
+          "use": "pink-lower-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 1000
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "pink-flash-one",
+      "name": "pink-flash-one",
+      "type": "shape",
+      "start": 2000,
+      "duration": 83,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 3,
+        "height": 30,
+        "fill": "#e85385"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "pink-flash-one-pose",
+          "use": "pink-flash-one-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 83
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "pink-flash-two",
+      "name": "pink-flash-two",
+      "type": "shape",
+      "start": 2917,
+      "duration": 83,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 4,
+        "height": 38,
+        "fill": "#e85385"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "pink-flash-two-pose",
+          "use": "pink-flash-two-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 83
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "akenai",
+      "name": "明けない夜に",
+      "start": 3375,
+      "duration": 1792,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 1.5,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "akenai-g0",
+          "text": "明"
+        },
+        {
+          "id": "akenai-g1",
+          "text": "け"
+        },
+        {
+          "id": "akenai-g2",
+          "text": "な"
+        },
+        {
+          "id": "akenai-g3",
+          "text": "い"
+        },
+        {
+          "id": "akenai-g4",
+          "text": "夜"
+        },
+        {
+          "id": "akenai-g5",
+          "text": "に"
+        }
+      ],
+      "animations": [
+        {
+          "id": "akenai-enter",
+          "use": "core/enter-type",
+          "each": "character",
+          "duration": 125,
+          "stagger": 18
+        },
+        {
+          "id": "akenai-pose",
+          "use": "akenai-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 1792
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "akenai-label",
+      "name": "A K E N A I   Y O R U N I",
+      "start": 2958,
+      "duration": 334,
+      "layer": "labels",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.25,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "akenai-label-g0",
+          "text": "A"
+        },
+        {
+          "id": "akenai-label-g1",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g2",
+          "text": "K"
+        },
+        {
+          "id": "akenai-label-g3",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g4",
+          "text": "E"
+        },
+        {
+          "id": "akenai-label-g5",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g6",
+          "text": "N"
+        },
+        {
+          "id": "akenai-label-g7",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g8",
+          "text": "A"
+        },
+        {
+          "id": "akenai-label-g9",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g10",
+          "text": "I"
+        },
+        {
+          "id": "akenai-label-g11",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g12",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g13",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g14",
+          "text": "Y"
+        },
+        {
+          "id": "akenai-label-g15",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g16",
+          "text": "O"
+        },
+        {
+          "id": "akenai-label-g17",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g18",
+          "text": "R"
+        },
+        {
+          "id": "akenai-label-g19",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g20",
+          "text": "U"
+        },
+        {
+          "id": "akenai-label-g21",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g22",
+          "text": "N"
+        },
+        {
+          "id": "akenai-label-g23",
+          "text": " "
+        },
+        {
+          "id": "akenai-label-g24",
+          "text": "I"
+        }
+      ],
+      "animations": [
+        {
+          "id": "akenai-label-enter",
+          "use": "core/enter-type",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "akenai-label-pose",
+          "use": "akenai-label-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 334
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "voice",
+      "name": "失いかけた声を上げて",
+      "start": 5167,
+      "duration": 3458,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.25,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "voice-g0",
+          "text": "失"
+        },
+        {
+          "id": "voice-g1",
+          "text": "い"
+        },
+        {
+          "id": "voice-g2",
+          "text": "か"
+        },
+        {
+          "id": "voice-g3",
+          "text": "け"
+        },
+        {
+          "id": "voice-g4",
+          "text": "た"
+        },
+        {
+          "id": "voice-g5",
+          "text": "声"
+        },
+        {
+          "id": "voice-g6",
+          "text": "を"
+        },
+        {
+          "id": "voice-g7",
+          "text": "上"
+        },
+        {
+          "id": "voice-g8",
+          "text": "げ"
+        },
+        {
+          "id": "voice-g9",
+          "text": "て"
+        }
+      ],
+      "animations": [
+        {
+          "id": "voice-enter",
+          "use": "core/enter-type",
+          "each": "character",
+          "duration": 125,
+          "stagger": 27
+        },
+        {
+          "id": "voice-pose",
+          "use": "voice-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 3458
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "hard-upper-a",
+      "name": "I'm a",
+      "start": 8625,
+      "duration": 2000,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "bold",
+        "size": 1.65,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "hard-upper-a-g0",
+          "text": "I"
+        },
+        {
+          "id": "hard-upper-a-g1",
+          "text": "'"
+        },
+        {
+          "id": "hard-upper-a-g2",
+          "text": "m"
+        },
+        {
+          "id": "hard-upper-a-g3",
+          "text": " "
+        },
+        {
+          "id": "hard-upper-a-g4",
+          "text": "a"
+        }
+      ],
+      "animations": [
+        {
+          "id": "hard-upper-a-enter",
+          "use": "core/enter-glitch",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "hard-upper-a-pose",
+          "use": "hard-upper-a-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2000
+        }
+      ],
+      "materials": [
+        {
+          "id": "hard-upper-a-grain",
+          "use": "core/grain",
+          "params": {
+            "amount": 0.75
+          }
+        },
+        {
+          "id": "hard-upper-a-scan",
+          "use": "core/scan",
+          "params": {
+            "amount": 0.7
+          }
+        }
+      ]
+    },
+    {
+      "id": "hard-upper-mess",
+      "name": "mess.",
+      "start": 9042,
+      "duration": 1583,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "bold",
+        "size": 1.65,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "hard-upper-mess-g0",
+          "text": "m"
+        },
+        {
+          "id": "hard-upper-mess-g1",
+          "text": "e"
+        },
+        {
+          "id": "hard-upper-mess-g2",
+          "text": "s"
+        },
+        {
+          "id": "hard-upper-mess-g3",
+          "text": "s"
+        },
+        {
+          "id": "hard-upper-mess-g4",
+          "text": "."
+        }
+      ],
+      "animations": [
+        {
+          "id": "hard-upper-mess-enter",
+          "use": "core/enter-glitch",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "hard-upper-mess-pose",
+          "use": "hard-upper-mess-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 1583
+        }
+      ],
+      "materials": [
+        {
+          "id": "hard-upper-mess-grain",
+          "use": "core/grain",
+          "params": {
+            "amount": 0.75
+          }
+        },
+        {
+          "id": "hard-upper-mess-scan",
+          "use": "core/scan",
+          "params": {
+            "amount": 0.7
+          }
+        }
+      ]
+    },
+    {
+      "id": "hard-lower-a",
+      "name": "I'm a",
+      "start": 9708,
+      "duration": 917,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "bold",
+        "size": 1.65,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "hard-lower-a-g0",
+          "text": "I"
+        },
+        {
+          "id": "hard-lower-a-g1",
+          "text": "'"
+        },
+        {
+          "id": "hard-lower-a-g2",
+          "text": "m"
+        },
+        {
+          "id": "hard-lower-a-g3",
+          "text": " "
+        },
+        {
+          "id": "hard-lower-a-g4",
+          "text": "a"
+        }
+      ],
+      "animations": [
+        {
+          "id": "hard-lower-a-enter",
+          "use": "core/enter-glitch",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "hard-lower-a-pose",
+          "use": "hard-lower-a-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 917
+        }
+      ],
+      "materials": [
+        {
+          "id": "hard-lower-a-grain",
+          "use": "core/grain",
+          "params": {
+            "amount": 0.75
+          }
+        },
+        {
+          "id": "hard-lower-a-scan",
+          "use": "core/scan",
+          "params": {
+            "amount": 0.7
+          }
+        }
+      ]
+    },
+    {
+      "id": "hard-lower-mess",
+      "name": "mess.",
+      "start": 10042,
+      "duration": 583,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "bold",
+        "size": 1.65,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "hard-lower-mess-g0",
+          "text": "m"
+        },
+        {
+          "id": "hard-lower-mess-g1",
+          "text": "e"
+        },
+        {
+          "id": "hard-lower-mess-g2",
+          "text": "s"
+        },
+        {
+          "id": "hard-lower-mess-g3",
+          "text": "s"
+        },
+        {
+          "id": "hard-lower-mess-g4",
+          "text": "."
+        }
+      ],
+      "animations": [
+        {
+          "id": "hard-lower-mess-enter",
+          "use": "core/enter-glitch",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "hard-lower-mess-pose",
+          "use": "hard-lower-mess-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 583
+        }
+      ],
+      "materials": [
+        {
+          "id": "hard-lower-mess-grain",
+          "use": "core/grain",
+          "params": {
+            "amount": 0.75
+          }
+        },
+        {
+          "id": "hard-lower-mess-scan",
+          "use": "core/scan",
+          "params": {
+            "amount": 0.7
+          }
+        }
+      ]
+    },
+    {
+      "id": "furikaerenai",
+      "name": "振り返れない",
+      "start": 10625,
+      "duration": 1583,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.48,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "furikaerenai-g0",
+          "text": "振"
+        },
+        {
+          "id": "furikaerenai-g1",
+          "text": "り"
+        },
+        {
+          "id": "furikaerenai-g2",
+          "text": "返"
+        },
+        {
+          "id": "furikaerenai-g3",
+          "text": "れ"
+        },
+        {
+          "id": "furikaerenai-g4",
+          "text": "な"
+        },
+        {
+          "id": "furikaerenai-g5",
+          "text": "い"
+        }
+      ],
+      "animations": [
+        {
+          "id": "furikaerenai-enter",
+          "use": "core/enter-type",
+          "each": "character",
+          "duration": 125,
+          "stagger": 20
+        },
+        {
+          "id": "furikaerenai-pose",
+          "use": "furikaerenai-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 1583
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "furikaerenai-top",
+      "name": "F U R I K A E R E N A I",
+      "start": 10625,
+      "duration": 1583,
+      "layer": "labels",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.25,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "furikaerenai-top-g0",
+          "text": "F"
+        },
+        {
+          "id": "furikaerenai-top-g1",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g2",
+          "text": "U"
+        },
+        {
+          "id": "furikaerenai-top-g3",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g4",
+          "text": "R"
+        },
+        {
+          "id": "furikaerenai-top-g5",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g6",
+          "text": "I"
+        },
+        {
+          "id": "furikaerenai-top-g7",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g8",
+          "text": "K"
+        },
+        {
+          "id": "furikaerenai-top-g9",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g10",
+          "text": "A"
+        },
+        {
+          "id": "furikaerenai-top-g11",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g12",
+          "text": "E"
+        },
+        {
+          "id": "furikaerenai-top-g13",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g14",
+          "text": "R"
+        },
+        {
+          "id": "furikaerenai-top-g15",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g16",
+          "text": "E"
+        },
+        {
+          "id": "furikaerenai-top-g17",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g18",
+          "text": "N"
+        },
+        {
+          "id": "furikaerenai-top-g19",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g20",
+          "text": "A"
+        },
+        {
+          "id": "furikaerenai-top-g21",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-top-g22",
+          "text": "I"
+        }
+      ],
+      "animations": [
+        {
+          "id": "furikaerenai-top-enter",
+          "use": "core/enter-type",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "furikaerenai-top-pose",
+          "use": "furikaerenai-top-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 1583
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "furikaerenai-bottom",
+      "name": "F U R I K A E R E N A I",
+      "start": 10625,
+      "duration": 1583,
+      "layer": "labels",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.25,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "furikaerenai-bottom-g0",
+          "text": "F"
+        },
+        {
+          "id": "furikaerenai-bottom-g1",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g2",
+          "text": "U"
+        },
+        {
+          "id": "furikaerenai-bottom-g3",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g4",
+          "text": "R"
+        },
+        {
+          "id": "furikaerenai-bottom-g5",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g6",
+          "text": "I"
+        },
+        {
+          "id": "furikaerenai-bottom-g7",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g8",
+          "text": "K"
+        },
+        {
+          "id": "furikaerenai-bottom-g9",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g10",
+          "text": "A"
+        },
+        {
+          "id": "furikaerenai-bottom-g11",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g12",
+          "text": "E"
+        },
+        {
+          "id": "furikaerenai-bottom-g13",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g14",
+          "text": "R"
+        },
+        {
+          "id": "furikaerenai-bottom-g15",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g16",
+          "text": "E"
+        },
+        {
+          "id": "furikaerenai-bottom-g17",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g18",
+          "text": "N"
+        },
+        {
+          "id": "furikaerenai-bottom-g19",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g20",
+          "text": "A"
+        },
+        {
+          "id": "furikaerenai-bottom-g21",
+          "text": " "
+        },
+        {
+          "id": "furikaerenai-bottom-g22",
+          "text": "I"
+        }
+      ],
+      "animations": [
+        {
+          "id": "furikaerenai-bottom-enter",
+          "use": "core/enter-type",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "furikaerenai-bottom-pose",
+          "use": "furikaerenai-bottom-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 1583
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "heart",
+      "name": "僕の心は",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.65,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "heart-g0",
+          "text": "僕"
+        },
+        {
+          "id": "heart-g1",
+          "text": "の"
+        },
+        {
+          "id": "heart-g2",
+          "text": "心"
+        },
+        {
+          "id": "heart-g3",
+          "text": "は"
+        }
+      ],
+      "animations": [
+        {
+          "id": "heart-enter",
+          "use": "core/enter-focus",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "heart-pose",
+          "use": "heart-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "heart-echo",
+      "name": "僕の心は",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "echo",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 1.55,
+        "color": "#242424",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "heart-echo-g0",
+          "text": "僕"
+        },
+        {
+          "id": "heart-echo-g1",
+          "text": "の"
+        },
+        {
+          "id": "heart-echo-g2",
+          "text": "心"
+        },
+        {
+          "id": "heart-echo-g3",
+          "text": "は"
+        }
+      ],
+      "animations": [
+        {
+          "id": "heart-echo-pose",
+          "use": "heart-echo-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "bracket-left-stem",
+      "name": "bracket-left-stem",
+      "type": "shape",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 3,
+        "height": 122,
+        "fill": "#ffffff"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "bracket-left-stem-pose",
+          "use": "bracket-left-stem-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "bracket-left-top",
+      "name": "bracket-left-top",
+      "type": "shape",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 16,
+        "height": 3,
+        "fill": "#ffffff"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "bracket-left-top-pose",
+          "use": "bracket-left-top-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "bracket-left-bottom",
+      "name": "bracket-left-bottom",
+      "type": "shape",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 16,
+        "height": 3,
+        "fill": "#ffffff"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "bracket-left-bottom-pose",
+          "use": "bracket-left-bottom-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "bracket-right-stem",
+      "name": "bracket-right-stem",
+      "type": "shape",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 3,
+        "height": 122,
+        "fill": "#ffffff"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "bracket-right-stem-pose",
+          "use": "bracket-right-stem-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "bracket-right-top",
+      "name": "bracket-right-top",
+      "type": "shape",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 16,
+        "height": 3,
+        "fill": "#ffffff"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "bracket-right-top-pose",
+          "use": "bracket-right-top-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "bracket-right-bottom",
+      "name": "bracket-right-bottom",
+      "type": "shape",
+      "start": 12208,
+      "duration": 2167,
+      "layer": "accents",
+      "layout": "line",
+      "shape": {
+        "kind": "rectangle",
+        "width": 16,
+        "height": 3,
+        "fill": "#ffffff"
+      },
+      "content": [],
+      "animations": [
+        {
+          "id": "bracket-right-bottom-pose",
+          "use": "bracket-right-bottom-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2167
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "refrain-large",
+      "name": "I'm a mess",
+      "start": 17333,
+      "duration": 2000,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "bold",
+        "size": 1.65,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "refrain-large-g0",
+          "text": "I"
+        },
+        {
+          "id": "refrain-large-g1",
+          "text": "'"
+        },
+        {
+          "id": "refrain-large-g2",
+          "text": "m"
+        },
+        {
+          "id": "refrain-large-g3",
+          "text": " "
+        },
+        {
+          "id": "refrain-large-g4",
+          "text": "a"
+        },
+        {
+          "id": "refrain-large-g5",
+          "text": " "
+        },
+        {
+          "id": "refrain-large-g6",
+          "text": "m"
+        },
+        {
+          "id": "refrain-large-g7",
+          "text": "e"
+        },
+        {
+          "id": "refrain-large-g8",
+          "text": "s"
+        },
+        {
+          "id": "refrain-large-g9",
+          "text": "s"
+        }
+      ],
+      "animations": [
+        {
+          "id": "refrain-large-enter",
+          "use": "core/enter-glitch",
+          "each": "character",
+          "duration": 125,
+          "stagger": 20
+        },
+        {
+          "id": "refrain-large-pose",
+          "use": "refrain-large-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2000
+        }
+      ],
+      "materials": [
+        {
+          "id": "refrain-large-grain",
+          "use": "core/grain",
+          "params": {
+            "amount": 0.75
+          }
+        },
+        {
+          "id": "refrain-large-scan",
+          "use": "core/scan",
+          "params": {
+            "amount": 0.7
+          }
+        }
+      ]
+    },
+    {
+      "id": "refrain-credit",
+      "name": "M Y   F I R S T   S T O R Y",
+      "start": 17333,
+      "duration": 2000,
+      "layer": "labels",
+      "layout": "line",
+      "style": {
+        "face": "mincho",
+        "size": 0.25,
+        "color": "#ffffff",
+        "italic": false
+      },
+      "content": [
+        {
+          "id": "refrain-credit-g0",
+          "text": "M"
+        },
+        {
+          "id": "refrain-credit-g1",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g2",
+          "text": "Y"
+        },
+        {
+          "id": "refrain-credit-g3",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g4",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g5",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g6",
+          "text": "F"
+        },
+        {
+          "id": "refrain-credit-g7",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g8",
+          "text": "I"
+        },
+        {
+          "id": "refrain-credit-g9",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g10",
+          "text": "R"
+        },
+        {
+          "id": "refrain-credit-g11",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g12",
+          "text": "S"
+        },
+        {
+          "id": "refrain-credit-g13",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g14",
+          "text": "T"
+        },
+        {
+          "id": "refrain-credit-g15",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g16",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g17",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g18",
+          "text": "S"
+        },
+        {
+          "id": "refrain-credit-g19",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g20",
+          "text": "T"
+        },
+        {
+          "id": "refrain-credit-g21",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g22",
+          "text": "O"
+        },
+        {
+          "id": "refrain-credit-g23",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g24",
+          "text": "R"
+        },
+        {
+          "id": "refrain-credit-g25",
+          "text": " "
+        },
+        {
+          "id": "refrain-credit-g26",
+          "text": "Y"
+        }
+      ],
+      "animations": [
+        {
+          "id": "refrain-credit-enter",
+          "use": "core/enter-type",
+          "each": "phrase",
+          "duration": 125,
+          "stagger": 0
+        },
+        {
+          "id": "refrain-credit-pose",
+          "use": "refrain-credit-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 2000
+        }
+      ],
+      "materials": []
+    },
+    {
+      "id": "refrain-small",
+      "name": "I'm a mess",
+      "start": 19333,
+      "duration": 5542,
+      "layer": "lyrics",
+      "layout": "line",
+      "style": {
+        "face": "bold",
+        "size": 0.86,
+        "color": "#ffffff",
+        "italic": true
+      },
+      "content": [
+        {
+          "id": "refrain-small-g0",
+          "text": "I"
+        },
+        {
+          "id": "refrain-small-g1",
+          "text": "'"
+        },
+        {
+          "id": "refrain-small-g2",
+          "text": "m"
+        },
+        {
+          "id": "refrain-small-g3",
+          "text": " "
+        },
+        {
+          "id": "refrain-small-g4",
+          "text": "a"
+        },
+        {
+          "id": "refrain-small-g5",
+          "text": " "
+        },
+        {
+          "id": "refrain-small-g6",
+          "text": "m"
+        },
+        {
+          "id": "refrain-small-g7",
+          "text": "e"
+        },
+        {
+          "id": "refrain-small-g8",
+          "text": "s"
+        },
+        {
+          "id": "refrain-small-g9",
+          "text": "s"
+        }
+      ],
+      "animations": [
+        {
+          "id": "refrain-small-pose",
+          "use": "refrain-small-pose",
+          "each": "phrase",
+          "at": 0,
+          "duration": 5542
+        }
+      ],
+      "materials": [
+        {
+          "id": "refrain-small-grain",
+          "use": "core/grain",
+          "params": {
+            "amount": 0.75
+          }
+        },
+        {
+          "id": "refrain-small-scan",
+          "use": "core/scan",
+          "params": {
+            "amount": 0.7
+          }
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "pink-upper-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -153.6
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -78.72
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": -0.2617993877991494
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "pink-lower-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 144
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 114.88
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": -0.2617993877991494
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "pink-flash-one-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 187.6
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "pink-flash-two-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -373
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -86.4
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "akenai-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 7.679999999999995
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "akenai-label-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 7.679999999999995
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 0.5
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 0.5
+          }
+        ]
+      }
+    },
+    "voice-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 197.6
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 7.679999999999995
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "hard-upper-a-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -198.4
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -142.72
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "hard-upper-mess-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -73.6
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -80.32000000000001
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "hard-lower-a-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 158.4
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 66.08
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "hard-lower-mess-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 222.4
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 130.88
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "furikaerenai-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -189.6
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 7.679999999999995
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "furikaerenai-top-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -189.6
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -15.520000000000005
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 0.5
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 0.5
+          }
+        ]
+      }
+    },
+    "furikaerenai-bottom-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -189.6
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 30.079999999999995
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 0.5
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 0.5
+          }
+        ]
+      }
+    },
+    "heart-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 7.679999999999995
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "heart-echo-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -160.32
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "bracket-left-stem-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -208
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 9.599999999999994
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "bracket-left-top-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -201
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -51.400000000000006
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "bracket-left-bottom-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": -201
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 70.6
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "bracket-right-stem-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 208
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 9.599999999999994
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "bracket-right-top-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 201
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": -51.400000000000006
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "bracket-right-bottom-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 201
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 70.6
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ]
+      }
+    },
+    "refrain-large-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 11.679999999999996
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": -0.20943951023931953
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1.08,
+            "ease": "out"
+          },
+          {
+            "time": 250,
+            "value": 1
+          },
+          {
+            "time": 1833,
+            "value": 1
+          },
+          {
+            "time": 2000,
+            "value": 0.95
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1.08,
+            "ease": "out"
+          },
+          {
+            "time": 250,
+            "value": 1
+          },
+          {
+            "time": 1833,
+            "value": 1
+          },
+          {
+            "time": 2000,
+            "value": 0.95
+          }
+        ]
+      }
+    },
+    "refrain-credit-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 63.67999999999999
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": -0.20943951023931953
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 0.35
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 0.35
+          }
+        ]
+      }
+    },
+    "refrain-small-pose": {
+      "kind": "motion",
+      "keyframes": {
+        "x": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "y": [
+          {
+            "time": 0,
+            "value": 11.679999999999996
+          }
+        ],
+        "rotation": [
+          {
+            "time": 0,
+            "value": -0.20943951023931953
+          }
+        ],
+        "sx": [
+          {
+            "time": 0,
+            "value": 1.08,
+            "ease": "smooth"
+          },
+          {
+            "time": 800,
+            "value": 1
+          },
+          {
+            "time": 5200,
+            "value": 1
+          },
+          {
+            "time": 5542,
+            "value": 1.06
+          }
+        ],
+        "sy": [
+          {
+            "time": 0,
+            "value": 1.08,
+            "ease": "smooth"
+          },
+          {
+            "time": 800,
+            "value": 1
+          },
+          {
+            "time": 5200,
+            "value": 1
+          },
+          {
+            "time": 5542,
+            "value": 1.06
+          }
+        ],
+        "opacity": [
+          {
+            "time": 0,
+            "value": 1
+          },
+          {
+            "time": 5292,
+            "value": 1
+          },
+          {
+            "time": 5542,
+            "value": 0
+          }
+        ],
+        "blur": [
+          {
+            "time": 0,
+            "value": 0
+          },
+          {
+            "time": 5292,
+            "value": 0
+          },
+          {
+            "time": 5542,
+            "value": 12
+          }
+        ]
+      }
+    }
+  },
+  "markers": [
+    {
+      "id": "cue-29",
+      "time": 1208,
+      "name": "I’m a mess · pink",
+      "color": "#e85385"
+    },
+    {
+      "id": "cue-81",
+      "time": 3375,
+      "name": "明けない夜に",
+      "color": "#ffffff"
+    },
+    {
+      "id": "cue-124",
+      "time": 5167,
+      "name": "失いかけた声を上げて",
+      "color": "#ffffff"
+    },
+    {
+      "id": "cue-207",
+      "time": 8625,
+      "name": "I’m a mess · hard cuts",
+      "color": "#e85385"
+    },
+    {
+      "id": "cue-255",
+      "time": 10625,
+      "name": "振り返れない",
+      "color": "#ffffff"
+    },
+    {
+      "id": "cue-293",
+      "time": 12208,
+      "name": "僕の心は",
+      "color": "#ffffff"
+    },
+    {
+      "id": "cue-345",
+      "time": 14375,
+      "name": "Instrumental / transition",
+      "color": "#a3a3a3"
+    },
+    {
+      "id": "cue-416",
+      "time": 17333,
+      "name": "I’m a mess · refrain",
+      "color": "#e85385"
+    },
+    {
+      "id": "cue-464",
+      "time": 19333,
+      "name": "Refrain · pull back",
+      "color": "#e85385"
+    },
+    {
+      "id": "cue-597",
+      "time": 24875,
+      "name": "Credits / lyric silence",
+      "color": "#a3a3a3"
+    }
+  ]
+}

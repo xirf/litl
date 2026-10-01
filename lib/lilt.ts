@@ -1,4 +1,5 @@
 export type Style = {
+  italic?: boolean;
   face?: string;
   color?: string;
   size?: number;

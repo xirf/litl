@@ -159,6 +159,9 @@ export default function LibraryPanel() {
               </div>
               <div className={ui('demo-section')}>
                 <span className={ui('eyebrow')}>STARTING POINTS</span>
+                <Button icon="film" onClick={() => loadDemo('akubi-mess')}>
+                  I’m a mess · Reference lyrics
+                </Button>
                 <Button icon="layers" onClick={() => loadDemo('example-duet')}>
                   Duet + silence
                 </Button>

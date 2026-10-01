@@ -6,6 +6,12 @@ for (const file of ['model.js', 'core-pack.js', 'migrate.js', 'editing.js'])
 const E = Lilt3,
   score = JSON.parse(fs.readFileSync(path.join(__dirname, '../public/examples/score.json')));
 E.validate(score);
+const italicScore = structuredClone(score);
+italicScore.scenes[0].style = { ...italicScore.scenes[0].style, italic: true };
+E.validate(italicScore);
+assert.ok(E.compileScene(italicScore, italicScore.scenes[0]).glyphs.every((g) => g.style.italic));
+italicScore.scenes[0].style.italic = 'true';
+assert.throws(() => E.validate(italicScore), /Italic must be boolean/);
 const s = score.scenes[0],
   before = E.compileScene(score, s),
   wave = before.glyphs.find((g) => g.ch === '波'),

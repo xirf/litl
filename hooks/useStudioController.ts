@@ -608,7 +608,7 @@ export function useStudioController() {
       });
     }, 'Layer added');
   };
-  const setStyle = (key: keyof Style, value: string | number) =>
+  const setStyle = (key: keyof Style, value: string | number | boolean) =>
     editClip((c) => {
       if (selected.length) {
         c.styles ??= [];
@@ -1454,6 +1454,7 @@ export function useStudioController() {
   const glyphs = engine.flatten(clip).glyphs;
   const selectedGlyph = renderer.current?.cache?.glyphs?.find((g) => selected.includes(g.id));
   const style = {
+    italic: false,
     face: 'mincho',
     color: '#eeeae1',
     size: 1,

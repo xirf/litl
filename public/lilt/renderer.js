@@ -109,9 +109,31 @@
       return entry;
     }
     async ready() {
-      await Promise.all(
-        Object.keys(this.score.assets || {}).map((id) => this.imageAsset(id).promise),
-      );
+      const fonts = new Map();
+      for (const scene of this.score.scenes) {
+        if (scene.type === 'shape' || scene.type === 'image') continue;
+        for (const glyph of E.compileScene(this.score, scene).glyphs) {
+          const names =
+            scene.mixFonts && !glyph.explicitFace
+              ? ['mincho', 'sans', 'brush', 'display', 'bold']
+              : [glyph.style.face || 'mincho'];
+          for (const name of names) {
+            const face = faces[name];
+            if (!face) throw Error('Unknown font ' + name);
+            const font = `${glyph.style.italic ? 'italic ' : ''}${face.weight} 58px ${face.family}`;
+            if (!fonts.has(font)) fonts.set(font, new Set());
+            fonts.get(font).add(glyph.ch);
+          }
+        }
+      }
+      await Promise.all([
+        ...Object.keys(this.score.assets || {}).map((id) => this.imageAsset(id).promise),
+        ...Array.from(fonts, ([font, chars]) => document.fonts.load(font, [...chars].join(''))),
+      ]);
+      if (!this.destroyed) {
+        this.invalidate();
+        this.draw(this.time);
+      }
     }
     compileVisual(scene, plan) {
       const item = scene[scene.type],
@@ -229,7 +251,7 @@
         const f = faces[o.face];
         if (!f) throw Error('Unknown font ' + o.face);
         const fs = 58 * o.size;
-        this.ctx.font = `${f.weight} ${fs}px ${f.family}`;
+        this.ctx.font = `${o.italic ? 'italic ' : ''}${f.weight} ${fs}px ${f.family}`;
         return {
           ...g,
           o,

@@ -279,6 +279,7 @@
   }
   function checkStyle(s) {
     if (!s) return;
+    if (s.italic != null && typeof s.italic !== 'boolean') throw Error('Italic must be boolean.');
     for (const k of ['size', 'dx', 'dy', 'rotation'])
       if (s[k] != null && (!Number.isFinite(s[k]) || Math.abs(s[k]) > 1000))
         throw Error('Invalid style ' + k);

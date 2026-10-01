@@ -130,7 +130,7 @@ The migration groups old override boundaries into word units; it does not perfor
 linguistic word segmentation. Adjust the hierarchy and vocal timing yourself.
 
 Style properties: `face`, six-digit hex `color`, `size` (.25–4), `dx`, `dy`,
-`rotation`. Scene style supplies defaults. Unit styles inherit down the tree.
+`rotation`, and boolean `italic`. Scene style supplies defaults. Unit styles inherit down the tree.
 `scene.styles` contains ordered `{select, style}` overrides. Font names are
 `mincho`, `bold`, `sans`, `black`, `brush`, `display`.
 The embedded Japanese fonts are subsets for the supplied lyrics; new characters

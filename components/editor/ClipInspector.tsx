@@ -133,6 +133,14 @@ export default function ClipInspector() {
                 ))}
               </Select>
             </Field>
+            <label className={ui('checkbox')}>
+              <Input
+                type="checkbox"
+                checked={style.italic}
+                onChange={(e) => setStyle('italic', e.target.checked)}
+              />
+              Italic text
+            </label>
             <div className={ui('field-grid')}>
               <NumberField
                 label="Size"
