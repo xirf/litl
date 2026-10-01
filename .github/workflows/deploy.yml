@@ -32,6 +32,8 @@ jobs:
         run: npm run build
       - name: Install browser
         run: npx playwright install --with-deps chromium
+      - name: Install video verification tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Test production editor and standalone player
         env:
           TEST_URL: http://127.0.0.1:4173
