@@ -72,8 +72,6 @@ const recipes: Record<string, string> = {
     'relative w-full overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none',
   checker: 'bg-zinc-800 bg-[url(/checker.svg)] bg-repeat',
   'stage-corner': 'hidden',
-  'safe-area':
-    'pointer-events-none absolute inset-[10%] rounded-sm border border-dashed border-emerald-400/40',
   'stage-bottomline': 'flex w-full items-center justify-between gap-3 text-xs text-zinc-500',
   transport:
     'flex min-h-14 flex-wrap py-2 shrink-0 items-center justify-between gap-2 border-t border-zinc-800 px-3',

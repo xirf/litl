@@ -3,6 +3,8 @@ import { useRef, useState, useLayoutEffect } from 'react';
 import { ui } from '../../lib/ui';
 import { useEditor } from './EditorContext';
 import Icon from '../Icon';
+import SafeAreaOverlay from './SafeAreaOverlay';
+import type { GuideArea } from '../../lib/safe-areas';
 
 import { Button, Select } from '../ui';
 
@@ -39,6 +41,9 @@ export default function PreviewPanel() {
     duration,
     style,
   } = useEditor();
+  const [safeAreas, setSafeAreas] = useState<GuideArea[]>([]);
+  const [drawingSafeArea, setDrawingSafeArea] = useState(false);
+  const [showSafeAreas, setShowSafeAreas] = useState(true);
   const frameHost = useRef<HTMLDivElement>(null),
     [frameWidth, setFrameWidth] = useState<number>();
   useLayoutEffect(() => {
@@ -99,15 +104,81 @@ export default function PreviewPanel() {
             />
             <div className={ui('stage-corner top-left')} />
             <div className={ui('stage-corner bottom-right')} />
-            {guides && <div className={ui('safe-area')} />}
+            <SafeAreaOverlay
+              areas={safeAreas}
+              drawing={drawingSafeArea}
+              visible={showSafeAreas}
+              onAdd={(area) => setSafeAreas((areas) => [...areas, area])}
+              onFinish={() => setDrawingSafeArea(false)}
+            />
           </div>
         </div>
+      </div>
+      <div
+        className="flex shrink-0 flex-wrap items-center gap-2 border-t border-zinc-800 px-3 py-1 text-xs text-zinc-400"
+        aria-label="Safe-area guides"
+      >
+        <Button
+          icon="frame"
+          title={drawingSafeArea ? 'Cancel drawing safe area' : 'Draw safe area'}
+          aria-pressed={drawingSafeArea}
+          className={ui(drawingSafeArea ? 'active' : '')}
+          onClick={() => {
+            pause();
+            setShowSafeAreas(true);
+            setDrawingSafeArea(!drawingSafeArea);
+          }}
+        >
+          Draw safe area
+        </Button>
+        {safeAreas.length > 0 && (
+          <>
+            <Select
+              aria-label="Remove safe area"
+              className="h-7 w-32"
+              value=""
+              onChange={(event) =>
+                setSafeAreas((areas) => areas.filter((area) => area.id !== event.target.value))
+              }
+            >
+              <option value="" disabled>
+                Remove guide…
+              </option>
+              {safeAreas.map((area, i) => (
+                <option key={area.id} value={area.id}>
+                  Safe area {i + 1}
+                </option>
+              ))}
+            </Select>
+            <Button
+              icon={showSafeAreas ? 'eye' : 'hidden'}
+              title={showSafeAreas ? 'Hide safe areas' : 'Show safe areas'}
+              onClick={() => {
+                setDrawingSafeArea(false);
+                setShowSafeAreas(!showSafeAreas);
+              }}
+            />
+            <Button
+              icon="trash"
+              title="Clear safe areas"
+              onClick={() => {
+                setDrawingSafeArea(false);
+                setSafeAreas([]);
+              }}
+            />
+          </>
+        )}
+        <span>
+          {drawingSafeArea
+            ? 'Drag on the preview to mark an area to keep clear.'
+            : 'Preview only · overlap: yellow · >1s: red'}
+        </span>
       </div>
       <div className={ui('transport')}>
         <div className={ui('preview-options')}>
           <Button
             icon="frame"
-            title="Toggle safe areas and glyph guides"
+            title="Toggle glyph guides"
             className={ui(guides ? 'active' : '')}
             onClick={() => setGuides(!guides)}
           />

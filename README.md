@@ -393,3 +393,9 @@ It uses the official MCP SDK and the same text reconciliation/validation as Stud
 Configure it using `mcp.config.example.json`; a `npm run lyrics -- ...` CLI fallback
 is also available. It operates on exported JSON files, with backups and revision
 checks. Reopen edited JSON in Studio. It does not connect automatically to browser storage.
+
+### Safe-area guides
+
+Use **Draw safe area** below the preview, then drag a rectangle over a region to keep clear. Draw multiple guides, remove individual guides, or hide/clear them. Escape cancels drawing. An overlap turns the guide yellow; continuous overlap by the same clip for more than one second of playback turns it red. Pausing does not add time, and seeking, loop wraps, and edits reset the observation. Checks use rotated element bounds clipped to their layer, rather than opaque pixels.
+
+Guides are advisory, live only in the current editor session, and never move or restrict elements. They are excluded from project JSON, autosave, PNG/video exports, standalone players, and OBS. Reloading the page clears them.

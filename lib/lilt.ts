@@ -117,7 +117,18 @@ export type Score = {
 };
 export type Glyph = { id: string; ch: string; i: number; word: string; style: Style; o: Style };
 export type Scheduled = Clip & { index: number; start: number; end: number; layer: string };
+export type PreviewHit = {
+  scene: number;
+  i: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  clip: [number, number, number, number];
+};
 export interface Renderer {
+  hits: PreviewHit[];
   load(score: Score): void;
   resize(): void;
   invalidate(): void;

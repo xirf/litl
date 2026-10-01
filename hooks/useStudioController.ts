@@ -148,8 +148,10 @@ export function useStudioController() {
     },
     [pause],
   );
+  const seekVersion = useRef(0);
   const seek = useCallback(
     (ms: number, publish = true) => {
+      seekVersion.current++;
       const duration = renderer.current?.duration || 0;
       const next = Math.max(0, Math.min(duration, ms));
       anchor.current = performance.now() - next / rateRef.current;
@@ -1635,6 +1637,7 @@ export function useStudioController() {
     scoreRef,
     engineRef,
     timeRef,
+    seekVersion,
     playingRef,
     audio,
     audioURL,
