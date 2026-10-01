@@ -470,8 +470,8 @@
     for (const scene of score.scenes) {
       if (!scene.id || allIds.has(scene.id)) throw Error('Scene IDs must be unique.');
       allIds.add(scene.id);
-      if (!Number.isFinite(scene.duration) || scene.duration < 1000 || scene.duration > 60000)
-        throw Error('Scene duration must be 1000–60000 ms.');
+      if (!Number.isFinite(scene.duration) || scene.duration < 1 || scene.duration > 60000)
+        throw Error('Scene duration must be 1–60000 ms.');
       total += scene.duration;
       if (scene.type && !['text', 'shape', 'image'].includes(scene.type))
         throw Error('Unknown clip type.');

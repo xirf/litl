@@ -1,31 +1,28 @@
 'use client';
 import { useEditor } from './EditorContext';
-import { ui, cn } from '../../lib/ui';
+import { cn } from '../../lib/ui';
 import { seconds } from '../../lib/editor-helpers';
-import Icon from '../Icon';
 export default function TimelineMarkers() {
   const e = useEditor();
   return (
-    <div className={cn(ui('timeline-row'), 'marker-row h-9')}>
-      <div className={ui('track-label')}>
-        <Icon name="marker" />
-        <span>MARKERS</span>
-        <span className="ml-auto text-zinc-500">{e.score.markers?.length || 0}</span>
-      </div>
-      <div
-        className="marker-lane relative h-9 shrink-0 bg-zinc-950/60"
-        style={{ width: e.totalWidth }}
-      >
-        {e.score.markers?.map((marker) => (
+    <div
+      className="pointer-events-none absolute top-0 bottom-0 left-[188px] z-20"
+      style={{ width: e.totalWidth }}
+    >
+      {e.score.markers?.map((marker) => (
+        <div
+          key={marker.id}
+          className="absolute top-0 bottom-0 border-l"
+          style={{ left: `${(marker.time / e.duration) * 100}%`, borderColor: marker.color }}
+        >
           <button
-            key={marker.id}
             aria-label={`${marker.name} at ${seconds(marker.time)}`}
             title={`${marker.name} · ${seconds(marker.time)} · double-click to edit`}
             className={cn(
-              'timeline-marker absolute inset-y-1 flex -translate-x-1/2 items-center gap-1 rounded px-1 text-xs hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-violet-300',
-              e.selectedMarkerId === marker.id && 'bg-zinc-800 ring-1 ring-amber-300/50',
+              'timeline-marker pointer-events-auto absolute top-0 -left-px max-w-40 truncate rounded-tr rounded-br px-2 py-0.5 text-left text-xs text-zinc-950',
+              e.selectedMarkerId === marker.id && 'ring-1 ring-white',
             )}
-            style={{ left: `${(marker.time / e.duration) * 100}%`, color: marker.color }}
+            style={{ backgroundColor: marker.color }}
             onClick={() => {
               e.pause();
               e.seek(marker.time);
@@ -40,11 +37,10 @@ export default function TimelineMarkers() {
               e.openContext(event, undefined, marker.time);
             }}
           >
-            <Icon name="marker" />
-            <span className="max-w-28 truncate">{marker.name}</span>
+            {marker.name}
           </button>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -59,7 +59,7 @@ at a production preview instead. The tests also run an optional local relay.
   PNG snapshots, and self-contained HTML player export with embedded fonts.
 - Search actions with Ctrl/Cmd+K. N creates text, Shift+N creates a shape, Delete
   removes the selection, Q/W trim to the playhead, and S splits a clip. Trimming and
-  splitting keep at least one second in each resulting clip.
+  splitting allow positive durations down to one millisecond.
 - M adds a named/color-coded timeline marker; double-click to edit it. Shift+M/Alt+M
   seek next/previous markers. Markers persist in project JSON and support undo/redo.
 - Space plays/pauses; arrows step frames; Shift+arrows seek seconds; Home/End seek
@@ -324,6 +324,13 @@ aligned to a recording. The renderer caps DPR at 2; heavy custom materials cost 
 
 The supplied Lilt v3 source is preserved and extended under `public/lilt/`. Font
 license notices are retained in `public/lilt/font-licenses/` and the embedded CSS.
+
+The File/Edit/View menus expose new/open/save/export, undo/redo, split/delete and
+view commands. The preview fits both landscape and portrait compositions without
+stretching. Markers and loop regions share the ruler above the tracks; marker labels
+start at their timestamp and guide lines extend through the timeline. Drag the ruler
+to scrub, Alt/Shift-drag to create a loop region, and middle-drag to pan. A loop drag
+creates one undoable change. Double-click a marker to change its label and color.
 
 ## UI architecture
 

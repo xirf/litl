@@ -51,7 +51,6 @@ export default function EditorFooter() {
           Player
         </a>
         <button onClick={() => setModal('help')}>⌨ Shortcuts</button>
-        <span className={ui('version')}>LILT / 04</span>
       </div>
     </footer>
   );

@@ -418,7 +418,7 @@ export default function ClipInspector() {
           <NumberField
             label="Duration"
             value={clip.duration / 1000}
-            min={1}
+            min={0.001}
             max={60}
             step={0.1}
             suffix="s"

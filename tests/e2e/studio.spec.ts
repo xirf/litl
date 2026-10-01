@@ -7,7 +7,7 @@ test('studio loads without runtime errors and can edit, undo, and keyframe a cli
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   await expect(page.locator('.stage-frame canvas')).toBeVisible();
   expect(
     await page
@@ -46,7 +46,7 @@ test('studio loads without runtime errors and can edit, undo, and keyframe a cli
 
 test('clip dragging, resizing, audio decoding, import and standalone export', async ({ page }) => {
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   const clip = page.locator('.timeline-clip').first();
   const rect = (await clip.boundingBox())!;
   await page.mouse.move(rect.x + rect.width / 2, rect.y + 15);
@@ -170,7 +170,7 @@ test('vanilla ESM player transparency, deterministic seeks, transport, and mobil
   expect(errors).toEqual([]);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   await page.screenshot({ path: 'test-results/studio-mobile.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
@@ -181,7 +181,7 @@ test('custom packs survive explicit restoration and OBS relay controls a separat
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   await page.getByRole('button', { name: /Create an effect/ }).click();
   await page.getByRole('button', { name: 'Register trusted code', exact: true }).click();
   const custom = page.locator('.effect-card').filter({ hasText: 'User/Helix' });
@@ -241,7 +241,7 @@ test('shape/image clips, editable Bézier easing and paths survive offline expor
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   await page
     .locator('.timeline-toolbar')
     .getByRole('button', { name: 'Shape', exact: true })
@@ -358,7 +358,7 @@ test('clip code validation, context menus, region-only playback and touchpad pan
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   await page
     .locator('.timeline-toolbar')
     .getByRole('button', { name: 'Shape', exact: true })

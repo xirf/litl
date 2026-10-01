@@ -7,7 +7,7 @@ const recipes: Record<string, string> = {
     'flex min-h-dvh min-w-0 flex-col bg-zinc-950 font-sans text-xs leading-5 text-zinc-200 antialiased lg:h-dvh lg:overflow-hidden [&_h2]:text-base [&_h2]:font-semibold [&_h3]:text-xs [&_h3]:font-semibold [&_button]:cursor-pointer [&_button]:disabled:cursor-not-allowed [&_button]:disabled:opacity-40 [&_a]:hover:text-violet-300 [&_svg]:shrink-0',
   loading: 'items-center justify-center gap-4',
   'studio-header':
-    'flex h-14 shrink-0 items-center justify-between gap-3 border-b border-zinc-800 px-3 lg:px-4',
+    'flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-3 py-2 lg:h-14 lg:flex-nowrap lg:px-4 lg:py-0',
   'studio-brand':
     'flex shrink-0 items-center gap-3 font-medium [&>span:last-child]:hidden sm:[&>span:last-child]:inline',
   'logo-mark': 'text-2xl font-bold tracking-tight text-violet-300',
@@ -64,12 +64,12 @@ const recipes: Record<string, string> = {
   'composition-bar':
     'flex h-11 shrink-0 items-center justify-between gap-2 border-b border-zinc-800 px-4 text-xs text-zinc-400 [&>div]:flex [&>div]:items-center [&>div]:gap-3',
   'tab-name': 'flex items-center gap-2 text-zinc-200',
-  'stage-area': 'flex min-h-0 flex-1 flex-col items-center justify-center gap-3 p-4 lg:p-6',
+  'stage-area': 'flex min-h-0 flex-1 flex-col items-center justify-center gap-3 p-2 lg:p-3',
   'stage-topline':
     'flex w-full items-center justify-between text-xs text-zinc-500 [&>span]:flex [&>span]:items-center [&>span]:gap-2',
   'live-dot': 'size-1.5 rounded-full bg-emerald-400',
   'stage-frame':
-    'relative max-h-full w-full overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none',
+    'relative w-full overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none',
   checker: 'bg-zinc-800 bg-[url(/checker.svg)] bg-repeat',
   'stage-corner': 'hidden',
   'safe-area':
@@ -142,17 +142,17 @@ const recipes: Record<string, string> = {
   'track-label':
     'sticky left-0 z-20 flex w-[188px] shrink-0 items-center gap-2 border-r border-zinc-800 bg-zinc-900 px-3 text-xs text-zinc-400 [&_strong]:min-w-0 [&_strong]:flex-1 [&_strong]:truncate [&_strong]:font-normal',
   'region-row': 'h-8',
-  'ruler-row': 'sticky top-0 z-10 h-8 bg-zinc-950',
+  'ruler-row': 'sticky top-0 z-10 h-14 bg-zinc-950',
   'ruler-label': 'text-xs text-zinc-500',
-  'region-lane': 'relative h-8 shrink-0 bg-zinc-900',
+  'region-lane': 'relative h-14 shrink-0 bg-zinc-900',
   'region-range':
-    'absolute top-1 h-6 min-w-2 cursor-grab touch-none rounded-sm border border-zinc-600 bg-violet-400/10 [&>span]:block [&>span]:truncate [&>span]:px-4 [&>span]:text-center [&>span]:text-xs [&>span]:text-violet-200',
+    'absolute top-0 h-4 min-w-2 cursor-grab touch-none rounded-sm border border-zinc-600 bg-violet-400/10 [&>span]:block [&>span]:truncate [&>span]:px-4 [&>span]:text-center [&>span]:text-xs [&>span]:text-violet-200',
   enabled: 'border-violet-400 bg-violet-400/20',
   'region-handle': 'absolute inset-y-0 w-3 touch-none bg-violet-300 text-xs text-zinc-950',
   start: 'left-0 cursor-ew-resize',
   end: 'right-0 cursor-ew-resize',
   'time-ruler':
-    'relative h-8 shrink-0 select-none border-b border-zinc-800 [&>span]:absolute [&>span]:top-1 [&>span]:border-l [&>span]:border-zinc-700 [&>span]:pl-1 [&>span]:text-xs [&>span]:text-zinc-500 [&>span]:last:-translate-x-full',
+    'relative h-14 shrink-0 select-none border-b border-zinc-800 [&>span]:absolute [&>span]:bottom-0 [&>span]:border-l [&>span]:border-zinc-700 [&>span]:pl-1 [&>span]:text-xs [&>span]:text-zinc-500 [&>span]:last:-translate-x-full',
   'playhead-handle': 'absolute bottom-0 z-10 h-3 w-2 -translate-x-1/2 rounded-t bg-violet-300',
   'track-index': 'text-xs text-zinc-600',
   'clip-lane': 'relative shrink-0 bg-zinc-950/50',

@@ -49,8 +49,7 @@ export default function LibraryPanel() {
           id === 'effects' ? (
             <>
               <div className={ui('library-heading')}>
-                <h2>Make words move.</h2>
-                <p>A little motion. A lot of feeling.</p>
+                <h2>Effects library</h2>
               </div>
               <label className={ui('search')}>
                 <Icon name="search" />
@@ -120,9 +119,7 @@ export default function LibraryPanel() {
                 }}
               >
                 <Icon name="code" />
-                <span>
-                  Create an effect<small>Your code. Your choreography.</small>
-                </span>
+                <span>Create an effect</span>
                 <Icon name="plus" />
               </button>
             </>
@@ -176,11 +173,6 @@ export default function LibraryPanel() {
           )
         }
       </TabsControl>
-      <div className={ui('library-foot')}>
-        <span className={ui('tiny-dot')} />
-        Vanilla JS at the heart.
-        <Button icon="help" title="Help & shortcuts" onClick={() => setModal('help')} />
-      </div>
     </aside>
   );
 }

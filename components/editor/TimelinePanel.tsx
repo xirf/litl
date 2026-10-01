@@ -30,6 +30,7 @@ export default function TimelinePanel() {
     setFrameIndex,
     dragPreview,
     regionPreview,
+    setRegionPreview,
     audio,
     audioURL,
     audioInput,
@@ -165,19 +166,17 @@ export default function TimelinePanel() {
             <option value="clips">Previous / next clip</option>
           </Select>
         </label>
-        <span className={ui('hint')}>
-          Two-finger swipe to pan · Ctrl/pinch to zoom · right-click for actions
-        </span>
+        <span className={ui('hint')}>Alt/Shift drag ruler: loop · middle drag: pan</span>
       </div>
       <div className={ui('timeline-scroll')} ref={timelineScroll}>
         <div className={ui('timeline-content')} style={{ width: totalWidth + 188 }}>
           <TimelineMarkers />
-          <div className={ui('timeline-row region-row')}>
-            <div className={ui('track-label')}>
-              <span>LOOP REGION</span>
+          <div className="region-row pointer-events-none absolute top-6 left-0 z-30 flex h-4">
+            <div className="w-[188px] shrink-0">
+              <span className="sr-only">Loop region</span>
             </div>
             <div
-              className={ui('region-lane')}
+              className="region-lane pointer-events-none relative h-4 shrink-0 [&>div]:pointer-events-auto"
               style={{ width: totalWidth }}
               onContextMenu={(e) =>
                 openContext(
@@ -249,8 +248,9 @@ export default function TimelinePanel() {
           </div>
           <div className={ui('timeline-row ruler-row')}>
             <div className={ui('track-label ruler-label')}>
-              <span>LAYER / SOURCE</span>
-              <span>◈</span>
+              <span>Tracks</span>
+              <Button icon="marker" title="Add marker (M)" onClick={addMarker} />
+              <Button icon="layers" title="Add layer" onClick={addLayer} />
             </div>
             <div
               className={ui('time-ruler')}
@@ -264,18 +264,44 @@ export default function TimelinePanel() {
                 )
               }
               style={{ width: totalWidth }}
-              onPointerDown={(e) => {
-                if (e.button !== 0) return;
+              onPointerDown={(event) => {
+                if (event.button !== 0 && event.button !== 1) return;
+                event.preventDefault();
                 pause();
-                const rect = e.currentTarget.getBoundingClientRect();
-                seek(((e.clientX - rect.left) / rect.width) * duration);
-                e.currentTarget.setPointerCapture(e.pointerId);
-              }}
-              onPointerMove={(e) => {
-                if (e.buttons === 1) {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  seek(((e.clientX - rect.left) / rect.width) * duration);
-                }
+                const target = event.currentTarget,
+                  rect = target.getBoundingClientRect(),
+                  x = event.clientX;
+                const at = (client: number) =>
+                  Math.max(0, Math.min(duration, ((client - rect.left) / rect.width) * duration));
+                const region = event.altKey || event.shiftKey,
+                  pan = event.button === 1,
+                  initialScroll = timelineScroll.current?.scrollLeft || 0;
+                target.setPointerCapture(event.pointerId);
+                if (!region && !pan) seek(at(x));
+                let latest: { start: number; end: number } | null = null;
+                const move = (e: PointerEvent) => {
+                  if (pan) {
+                    if (timelineScroll.current)
+                      timelineScroll.current.scrollLeft = initialScroll + x - e.clientX;
+                  } else if (region) {
+                    latest = {
+                      start: Math.min(at(x), at(e.clientX)),
+                      end: Math.max(at(x), at(e.clientX)),
+                    };
+                    setRegionPreview(latest);
+                  } else seek(at(e.clientX));
+                };
+                const end = (event: PointerEvent) => {
+                  setRegionPreview(null);
+                  if (latest && event.type !== 'pointercancel' && latest.end > latest.start)
+                    setRegion(latest.start, latest.end);
+                  target.removeEventListener('pointermove', move);
+                  target.removeEventListener('pointerup', end);
+                  target.removeEventListener('pointercancel', end);
+                };
+                target.addEventListener('pointermove', move);
+                target.addEventListener('pointerup', end);
+                target.addEventListener('pointercancel', end);
               }}
             >
               {Array.from({ length: Math.max(9, Math.round(zoom * 12)) }, (_, i) => {

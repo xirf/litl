@@ -957,9 +957,9 @@ export function useStudioController() {
       let newStart = start,
         newDuration = duration;
       if (mode === 'move') newStart = Math.max(0, start + delta);
-      if (mode === 'end') newDuration = Math.max(1000, Math.min(60000, duration + delta));
+      if (mode === 'end') newDuration = Math.max(1, Math.min(60000, duration + delta));
       if (mode === 'start') {
-        newStart = Math.max(0, Math.min(start + duration - 1000, start + delta));
+        newStart = Math.max(0, Math.min(start + duration - 1, start + delta));
         newDuration = start + duration - newStart;
       }
       latest = { id, start: Math.round(newStart), duration: Math.round(newDuration) };
@@ -1237,8 +1237,8 @@ export function useStudioController() {
     pause();
     const local = Math.round(timeRef.current - (clip.start || 0));
     const duration = edge === 'start' ? clip.duration - local : local;
-    if (local <= 0 || local >= clip.duration || duration < 1000) {
-      setStatus('Place the playhead inside the clip and keep at least one second.');
+    if (local <= 0 || local >= clip.duration || duration < 1) {
+      setStatus('Place the playhead inside the clip and keep a positive duration.');
       return;
     }
     editClip((c, s) => {
@@ -1251,8 +1251,8 @@ export function useStudioController() {
     if (!clip) return;
     pause();
     const local = Math.round(timeRef.current - (clip.start || 0));
-    if (local < 1000 || clip.duration - local < 1000) {
-      setStatus('Split must leave at least one second on each side.');
+    if (local < 1 || clip.duration - local < 1) {
+      setStatus('Place the playhead inside the clip to split it.');
       return;
     }
     const id = uid('clip');

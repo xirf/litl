@@ -82,10 +82,6 @@ export default function InspectorPanel() {
           )
         }
       </TabsControl>
-      <div className={ui('inspector-foot')}>
-        <Icon name="bolt" size={12} />
-        <span>Deterministic. Seek anywhere.</span>
-      </div>
     </aside>
   );
 }

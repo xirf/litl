@@ -4,7 +4,7 @@ test('keyboard creation, trimming, splitting, deletion and undo respect text inp
   page,
 }) => {
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   await page.getByRole('button', { name: 'New composition (⌘/Ctrl Alt N)', exact: true }).click();
   await expect(page.locator('.timeline-clip')).toHaveCount(1);
   await page.locator('body').click({ position: { x: 1, y: 1 } });
@@ -48,7 +48,7 @@ test('markers support editing, context actions, navigation, deletion and persist
   page,
 }) => {
   await page.goto('/studio');
-  await expect(page.getByRole('heading', { name: 'Make words move.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Effects library' })).toBeVisible();
   await page.getByRole('button', { name: 'New composition (⌘/Ctrl Alt N)', exact: true }).click();
   await page.locator('body').click({ position: { x: 1, y: 1 } });
   await page.keyboard.press('Shift+ArrowRight');

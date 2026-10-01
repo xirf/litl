@@ -1,4 +1,5 @@
 'use client';
+import { useRef, useState, useLayoutEffect } from 'react';
 import { ui } from '../../lib/ui';
 import { useEditor } from './EditorContext';
 import Icon from '../Icon';
@@ -38,6 +39,18 @@ export default function PreviewPanel() {
     duration,
     style,
   } = useEditor();
+  const frameHost = useRef<HTMLDivElement>(null),
+    [frameWidth, setFrameWidth] = useState<number>();
+  useLayoutEffect(() => {
+    const host = frameHost.current;
+    if (!host) return;
+    const observer = new ResizeObserver(() => {
+      const box = host.getBoundingClientRect();
+      setFrameWidth(Math.min(box.width, (box.height * score.stage!.width) / score.stage!.height));
+    });
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [score.stage!.width, score.stage!.height]);
   return (
     <main className={ui('composition')}>
       <div className={ui('composition-bar')}>
@@ -55,49 +68,39 @@ export default function PreviewPanel() {
         </div>
       </div>
       <div className={ui('stage-area')}>
-        <div className={ui('stage-topline')}>
-          <span>
-            <i className={ui('live-dot')} />
-            LIVE CANVAS
-          </span>
-          <span>
-            {timeline.clips.filter((c) => time >= c.start && time < c.end).length} active clips
-          </span>
-        </div>
         <div
-          className={ui(`stage-frame ${score.background?.transparent ? 'checker' : ''}`)}
-          style={
-            {
-              aspectRatio: `${score.stage!.width}/${score.stage!.height}`,
-              '--stage-ratio': score.stage!.width / score.stage!.height,
-            } as React.CSSProperties
-          }
+          ref={frameHost}
+          className="flex h-[40dvh] min-h-0 w-full shrink-0 items-center justify-center lg:h-auto lg:flex-1"
         >
-          <canvas
-            ref={canvas}
-            onPointerDown={stagePointer}
-            onContextMenu={(e) => {
-              const r = renderer.current!,
-                rect = e.currentTarget.getBoundingClientRect();
-              const hit = r.hit(
-                ((e.clientX - rect.left) / rect.width) * r.w,
-                ((e.clientY - rect.top) / rect.height) * r.h,
-              );
-              openContext(e, hit === null ? undefined : score.scenes[r.hitScene].id);
-            }}
-            aria-label="Composition preview. Click characters to select them."
-          />
-          <div className={ui('stage-corner top-left')} />
-          <div className={ui('stage-corner bottom-right')} />
-          {guides && <div className={ui('safe-area')} />}
-        </div>
-        <div className={ui('stage-bottomline')}>
-          <span>
-            {selected.length
-              ? `${selected.length} character${selected.length > 1 ? 's' : ''} selected · drag to reposition`
-              : 'Click a character to make it yours.'}
-          </span>
-          <span>{clock(time, score.stage!.fps)}</span>
+          <div
+            className={ui(`stage-frame ${score.background?.transparent ? 'checker' : ''}`)}
+            style={
+              {
+                width: frameWidth,
+                flexShrink: 0,
+                aspectRatio: `${score.stage!.width}/${score.stage!.height}`,
+                '--stage-ratio': score.stage!.width / score.stage!.height,
+              } as React.CSSProperties
+            }
+          >
+            <canvas
+              ref={canvas}
+              onPointerDown={stagePointer}
+              onContextMenu={(e) => {
+                const r = renderer.current!,
+                  rect = e.currentTarget.getBoundingClientRect();
+                const hit = r.hit(
+                  ((e.clientX - rect.left) / rect.width) * r.w,
+                  ((e.clientY - rect.top) / rect.height) * r.h,
+                );
+                openContext(e, hit === null ? undefined : score.scenes[r.hitScene].id);
+              }}
+              aria-label="Composition preview. Click characters to select them."
+            />
+            <div className={ui('stage-corner top-left')} />
+            <div className={ui('stage-corner bottom-right')} />
+            {guides && <div className={ui('safe-area')} />}
+          </div>
         </div>
       </div>
       <div className={ui('transport')}>

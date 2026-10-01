@@ -2,6 +2,7 @@
 import { ui } from '../../lib/ui';
 import { useEditor } from './EditorContext';
 import Icon from '../Icon';
+import EditorMenus from './EditorMenus';
 
 import { Button, Input } from '../ui';
 
@@ -27,10 +28,9 @@ export default function EditorHeader() {
           <i />
         </span>
         <span className={ui('brand-divider')} />
-        <span>
-          studio<span className={ui('beta')}>BETA</span>
-        </span>
+        <span>studio</span>
       </a>
+      <EditorMenus />
       <div className={ui('project-title')}>
         <span className={ui('project-dot')} />
         <Input
