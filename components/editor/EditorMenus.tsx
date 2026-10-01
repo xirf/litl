@@ -13,6 +13,7 @@ export default function EditorMenus() {
         ['Save', e.saveProject],
         ['Save as JSON…', e.exportScore],
         ['Export standalone HTML', e.exportHTML],
+        ['Export video…', () => e.setModal('export')],
       ],
     },
     {

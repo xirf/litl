@@ -68,9 +68,9 @@
       const b = this.canvas.getBoundingClientRect();
       this.w = this.options.width ?? this.score.stage?.width ?? b.width;
       this.h = this.options.height ?? this.score.stage?.height ?? b.height;
-      this.dpr = Math.min(devicePixelRatio || 1, 2);
-      this.canvas.width = Math.round(b.width * this.dpr);
-      this.canvas.height = Math.round(b.height * this.dpr);
+      this.dpr = this.options.pixelRatio ?? Math.min(devicePixelRatio || 1, 2);
+      this.canvas.width = Math.round((this.options.pixelWidth ?? b.width) * this.dpr);
+      this.canvas.height = Math.round((this.options.pixelHeight ?? b.height) * this.dpr);
       this.invalidate();
       this.draw(this.time);
     }

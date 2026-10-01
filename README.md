@@ -56,7 +56,8 @@ at a production preview instead. The tests also run an optional local relay.
 - New compositions default to transparency. Background presets are optional; your own
   image or video can sit behind the lyric player in OBS.
 - Local autosave, undo/redo, JSON import/edit/export, custom JavaScript effect packs,
-  PNG snapshots, and self-contained HTML player export with embedded fonts.
+  PNG snapshots, self-contained HTML player export with embedded fonts, and local
+  MP4, transparent MOV, and MPEG video export with optional imported audio.
 - Search actions with Ctrl/Cmd+K. N creates text, Shift+N creates a shape, Delete
   removes the selection, Q/W trim to the playhead, and S splits a clip. Trimming and
   splitting allow positive durations down to one millisecond.
@@ -110,6 +111,39 @@ For classic script tags, load these files in order:
 The low-level `Renderer` exposes `load`, `draw`, `resize`, `invalidate`, `hit`,
 `destroy`, and the original evaluation/debug state. Original model and pack docs
 are in [public/lilt/SOURCE-README.md](public/lilt/SOURCE-README.md).
+
+## Video export
+
+Open **Export → Video** or **File → Export video…**. Choose the whole composition
+or its loop region. Exports use composition dimensions and frame rate, without
+editor guides, and optionally include the imported audio at the matching timeline
+offset. A separate renderer takes a snapshot of the project, leaving the preview
+and playhead untouched.
+
+| Format        | Codec                                                             | Transparency                          |
+| ------------- | ----------------------------------------------------------------- | ------------------------------------- |
+| MP4           | H.264 + optional AAC audio                                        | Opaque; choose a matte color          |
+| MOV           | Lossless QuickTime Animation (`qtrle`, ARGB) + optional AAC audio | Real alpha, including partial opacity |
+| MPEG (`.mpg`) | MPEG-2 + optional MP2 audio                                       | Opaque; choose a matte color          |
+
+MOV exports omit the generated backdrop while retaining image/shape layers. Add
+the MOV as an OBS Media Source, or import it into a video editor supporting
+QuickTime Animation. MP4/MPEG retain composition backgrounds and fill transparent
+pixels with the selected matte. Odd MP4/MPEG dimensions are padded by one pixel
+as needed by their codecs.
+
+Encoding runs locally with single-thread FFmpeg WebAssembly; no score, image, or
+audio is uploaded. The encoder downloads on first use (about 31 MB) and runs in a
+worker. Progress and cancellation are available. Closing the dialog cancels an
+active export. MOV files can be large; longer or higher-resolution compositions
+may exceed browser memory, so export loop regions when needed. Exports are limited
+to 8.3 megapixels, 10,000 frames, 192 MiB of encoded input PNGs, and 64 MiB of audio.
+
+`npm run dev` and `npm run build` generate the encoder assets through
+`scripts/prepare-video-export.mjs`. They are served from the same origin, with
+WASM chunks below Cloudflare's per-file asset limit. No cross-origin isolation or
+external CDN is required. The OBS renderer/player still work as vanilla JavaScript
+and do not load the video encoder.
 
 ## OBS
 
@@ -316,7 +350,7 @@ settings or through a connection with repository Secrets write permission.
 ## Scope and attribution
 
 This is a focused lyric/motion editor, not a full After Effects implementation.
-It does not yet include video import/export, audio export,
+It does not yet include video import, standalone audio export,
 connected-script shaping, WebGL shaders, cloud project storage, or collaboration.
 Font subsets cover the supplied Japanese lyrics; additional characters can use
 system fallback. The supplied 13 movements have illustrative timing, not timing

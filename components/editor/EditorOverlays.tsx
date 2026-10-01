@@ -10,6 +10,7 @@ import { download } from '../../lib/lilt';
 
 import AppDialog from '../ui/AppDialog';
 import CodeEditor from '../ui/CodeEditor';
+import VideoExportPanel from './VideoExportPanel';
 import { shortcutHelp } from '../../hooks/useEditorShortcuts';
 export default function EditorOverlays() {
   const { addMarker, selectedMarker, setMarkerDialogOpen, deleteMarker } = useEditor();
@@ -223,6 +224,7 @@ export default function EditorOverlays() {
               <p className={ui('modal-description')}>
                 Your composition, ready for a browser, a stream, or another project.
               </p>
+              <VideoExportPanel />
               <button className={ui('export-option')} onClick={() => void exportHTML()}>
                 <span className={ui('export-icon')}>
                   <Icon name="film" size={24} />
@@ -450,7 +452,7 @@ export default function EditorOverlays() {
               <p className={ui('hint')}>
                 The supplied Japanese lyrics have illustrative timing, not timing aligned to a
                 recording. Embedded fonts cover the supplied glyphs; other characters use system
-                fallback. Audio stays local and is not embedded in exports.
+                fallback. Audio stays local and can be included in video exports.
               </p>
               <a className={ui('docs-link')} href="/lilt/SOURCE-README.md" target="_blank">
                 Original model & pack documentation <Icon name="arrow" />
