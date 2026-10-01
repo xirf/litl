@@ -8,6 +8,7 @@
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.43.13",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "@uiw/react-codemirror": "^4.25.12",
     "@vinext/cloudflare": "^1.0.0",
     "clsx": "^2.1.1",
@@ -48,13 +49,15 @@
     "start": "vite preview",
     "deploy": "vinext-cloudflare deploy",
     "typecheck": "tsc --noEmit",
-    "test": "node tests/model.cjs && node tests/timeline.cjs && node tests/extensions.cjs && node tests/visuals.cjs && node tests/relay.cjs",
+    "test": "node tests/model.cjs && node tests/timeline.cjs && node tests/extensions.cjs && node tests/visuals.cjs && node tests/relay.cjs && node tests/mcp.mjs",
     "test:browser": "playwright test",
     "relay": "node scripts/relay.mjs",
     "format": "prettier --write app components hooks lib scripts tests public/lilt/{model,core-pack,renderer,player,migrate,editing,index}.js *.ts",
     "format:check": "prettier --check app components hooks lib scripts tests public/lilt/{model,core-pack,renderer,player,migrate,editing,index}.js *.ts",
     "build:player": "tailwindcss -i styles/player.css -o public/lilt/player.css --minify",
     "prebuild": "npm run build:player",
-    "predev": "npm run build:player"
+    "predev": "npm run build:player",
+    "mcp": "node scripts/mcp/server.mjs",
+    "lyrics": "node scripts/lyrics.mjs"
   }
 }

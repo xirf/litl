@@ -350,3 +350,12 @@ including in offline exports. Font-face assets remain separate for Canvas render
 Interaction references: [OpenCut](https://github.com/opencut-app/opencut) and its
 [classic editor](https://github.com/opencut-app/opencut-classic), particularly its
 shared controls, action-oriented shortcuts and discoverable timeline toolbar.
+
+## AI lyric editing / MCP
+
+The local [lyric authoring MCP](scripts/mcp/README.md) provides project discovery,
+lyric/timing reads, previews, batch edits and project creation from timed lines.
+It uses the official MCP SDK and the same text reconciliation/validation as Studio.
+Configure it using `mcp.config.example.json`; a `npm run lyrics -- ...` CLI fallback
+is also available. It operates on exported JSON files, with backups and revision
+checks. Reopen edited JSON in Studio. It does not connect automatically to browser storage.

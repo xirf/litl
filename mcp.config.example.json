@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "litl-lyrics": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/litl/scripts/mcp/server.mjs"],
+      "env": { "LILT_PROJECT_DIR": "/ABSOLUTE/PATH/lyric-projects" }
+    }
+  }
+}
